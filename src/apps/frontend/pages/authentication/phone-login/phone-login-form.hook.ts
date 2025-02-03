@@ -46,7 +46,7 @@ const usePhoneLoginForm = ({
 
       const formattedPhoneNumber = parsedPhoneNumber
         .getNationalNumber()
-        .toString();
+        ?.toString();
       const encodedCountryCode = encodeURIComponent(values.countryCode);
       const otpPageUrl = `${routes.VERIFY_OTP}?&country_code=${encodedCountryCode}&phone_number=${formattedPhoneNumber}`;
 

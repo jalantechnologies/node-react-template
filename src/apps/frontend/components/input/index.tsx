@@ -1,13 +1,14 @@
 import clsx from 'clsx';
 import styles from 'frontend/components/input/input.styles';
 import HorizontalStackLayout from 'frontend/components/layouts/horizontal-stack-layout';
+import { Nullable } from 'frontend/types/common-types';
 import * as React from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   disabled?: boolean;
   endEnhancer?: React.ReactElement | string;
-  error: string;
-  handleInputRef?: (ref: HTMLInputElement) => void;
+  error: string | false | undefined;
+  handleInputRef?: (ref: Nullable<HTMLInputElement>) => void;
   index?: number;
   startEnhancer?: React.ReactElement | string;
   testId?: string;

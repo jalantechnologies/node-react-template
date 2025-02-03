@@ -3,14 +3,14 @@ import styles from 'frontend/components/button/button.styles';
 import HorizontalStackLayout from 'frontend/components/layouts/horizontal-stack-layout';
 import Spinner from 'frontend/components/spinner/spinner';
 import { ButtonKind, ButtonSize, ButtonType } from 'frontend/types/button';
-import React, { PropsWithChildren } from 'react';
+import React, { MouseEventHandler, PropsWithChildren } from 'react';
 
 interface ButtonProps {
   disabled?: boolean;
   endEnhancer?: React.ReactElement | string;
   isLoading?: boolean;
   kind?: ButtonKind;
-  onClick?: (e) => void;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
   size?: ButtonSize;
   startEnhancer?: React.ReactElement | string;
   type?: ButtonType;

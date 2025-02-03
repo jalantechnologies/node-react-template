@@ -3,7 +3,7 @@ import React, { FocusEventHandler } from 'react';
 
 type OTPInputProps = {
   disabled: boolean;
-  error: string;
+  error: string | false | undefined;
   handleInputRef: (ref: HTMLInputElement) => void;
   index: number;
   name: string;

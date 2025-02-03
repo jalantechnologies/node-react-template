@@ -4,7 +4,9 @@ import { JsonObject } from 'frontend/types/common-types';
 import { MarkdownDocumentation } from 'frontend/types/documentation';
 
 export default class DocumentationService extends APIService {
-  getDocumentation = async (): Promise<ApiResponse<MarkdownDocumentation>> => {
+  getDocumentation = async (): Promise<
+    ApiResponse<MarkdownDocumentation | undefined>
+  > => {
     try {
       const response = await this.apiClient.get('/get-documentation');
 
