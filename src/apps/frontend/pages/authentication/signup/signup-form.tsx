@@ -28,10 +28,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ onError, onSuccess }) => {
           <div className="w-full">
             <FormControl
               label={'First name'}
-              error={formik.touched.firstName && formik.errors.firstName}
+              error={formik.touched.firstName ? formik.errors.firstName : ''}
             >
               <Input
-                error={formik.touched.firstName && formik.errors.firstName}
+                error={formik.touched.firstName ? formik.errors.firstName : ''}
                 data-testid="firstName"
                 disabled={isSignupLoading}
                 name="firstName"
@@ -45,10 +45,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ onError, onSuccess }) => {
           <div className="w-full">
             <FormControl
               label={'Last name'}
-              error={formik.touched.lastName && formik.errors.lastName}
+              error={formik.touched.lastName ? formik.errors.lastName : ''}
             >
               <Input
-                error={formik.touched.lastName && formik.errors.lastName}
+                error={formik.touched.lastName ? formik.errors.lastName : ''}
                 data-testid="lastName"
                 disabled={isSignupLoading}
                 name="lastName"
@@ -62,7 +62,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onError, onSuccess }) => {
         </Flex>
         <FormControl
           label={'Email'}
-          error={formik.touched.username && formik.errors.username}
+          error={formik.touched.username ? formik.errors.username : ''}
         >
           <Input
             data-testid="username"
@@ -74,7 +74,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onError, onSuccess }) => {
                 src="/assets/img/icon/email.svg"
               />
             }
-            error={formik.touched.username && formik.errors.username}
+            error={formik.touched.username ? formik.errors.username : ''}
             name="username"
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -84,10 +84,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ onError, onSuccess }) => {
         </FormControl>
         <FormControl
           label={'Password'}
-          error={formik.touched.password && formik.errors.password}
+          error={formik.touched.password ? formik.errors.password : ''}
         >
           <PasswordInput
-            error={formik.touched.password && formik.errors.password}
+            error={formik.touched.password ? formik.errors.password : ''}
             name={'password'}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -97,11 +97,13 @@ const SignupForm: React.FC<SignupFormProps> = ({ onError, onSuccess }) => {
         </FormControl>
         <FormControl
           label={'Re-type Password'}
-          error={formik.touched.retypePassword && formik.errors.retypePassword}
+          error={
+            formik.touched.retypePassword ? formik.errors.retypePassword : ''
+          }
         >
           <PasswordInput
             error={
-              formik.touched.retypePassword && formik.errors.retypePassword
+              formik.touched.retypePassword ? formik.errors.retypePassword : ''
             }
             name={'retypePassword'}
             onBlur={formik.handleBlur}

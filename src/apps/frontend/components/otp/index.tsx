@@ -7,7 +7,7 @@ import React, { useRef, useState, FocusEventHandler } from 'react';
 import OTPInput from './otp-input';
 
 interface OTPProps {
-  error: string | false | undefined;
+  error?: string;
   isLoading: boolean;
   onBlur?: FocusEventHandler<HTMLInputElement>;
   onChange: (values: string[]) => void;
@@ -59,7 +59,7 @@ const OTP: React.FC<OTPProps> = ({ error, isLoading, onBlur, onChange }) => {
             disabled={isLoading}
             index={index}
             name={'otp'}
-            error={error}
+            error={error || ''}
             onChange={(e) => handleOTPChange(e.target.value, index)}
             onBlur={onBlur}
             onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) =>

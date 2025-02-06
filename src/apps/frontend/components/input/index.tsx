@@ -7,7 +7,7 @@ import * as React from 'react';
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   disabled?: boolean;
   endEnhancer?: React.ReactElement | string;
-  error: string | false | undefined;
+  error?: string;
   handleInputRef?: (ref: Nullable<HTMLInputElement>) => void;
   index?: number;
   startEnhancer?: React.ReactElement | string;

@@ -6,6 +6,7 @@ import {
   AsyncError,
   PhoneNumber,
 } from 'frontend/types';
+import { Nullable } from 'frontend/types/common-types';
 import {
   getAccessTokenFromStorage,
   removeAccessTokenFromStorage,
@@ -19,31 +20,28 @@ type AuthContextType = {
   isSignupLoading: boolean;
   isUserAuthenticated: () => boolean;
   isVerifyOTPLoading: boolean;
-  login: (
-    username: string,
-    password: string,
-  ) => Promise<AccessToken | undefined>;
-  loginError: AsyncError | undefined;
-  loginResult: AccessToken | undefined;
+  login: (username: string, password: string) => Promise<Nullable<AccessToken>>;
+  loginError: Nullable<AsyncError>;
+  loginResult: Nullable<AccessToken>;
   logout: () => void;
-  sendOTP: (phoneNumber: PhoneNumber) => Promise<void>;
-  sendOTPError: AsyncError | undefined;
+  sendOTP: (phoneNumber: PhoneNumber) => Promise<Nullable<void>>;
+  sendOTPError: Nullable<AsyncError>;
   signup: (
     firstName: string,
     lastName: string,
     username: string,
-    password: string
-  ) => Promise<void>;
-  signupError: AsyncError | undefined;
+    password: string,
+  ) => Promise<Nullable<void>>;
+  signupError: Nullable<AsyncError>;
   verifyOTP: (
     phoneNumber: PhoneNumber,
     otp: string,
-  ) => Promise<AccessToken | undefined>;
-  verifyOTPError: AsyncError | undefined;
-  verifyOTPResult: AccessToken | undefined;
+  ) => Promise<Nullable<AccessToken>>;
+  verifyOTPError: Nullable<AsyncError>;
+  verifyOTPResult: Nullable<AccessToken>;
 };
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<Nullable<AuthContextType>>(null);
 
 const authService = new AuthService();
 
@@ -52,7 +50,7 @@ export const useAuthContext = (): AuthContextType =>
 
 const loginFn = async (
   username: string,
-  password: string
+  password: string,
 ): Promise<ApiResponse<AccessToken>> => {
   const result = await authService.login(username, password);
   if (result.data) {
@@ -65,7 +63,7 @@ const signupFn = async (
   firstName: string,
   lastName: string,
   username: string,
-  password: string
+  password: string,
 ): Promise<ApiResponse<void>> =>
   authService.signup(firstName, lastName, username, password);
 
@@ -77,12 +75,12 @@ const getAccessToken = (): AccessToken =>
 const isUserAuthenticated = () => !!getAccessToken();
 
 const sendOTPFn = async (
-  phoneNumber: PhoneNumber
+  phoneNumber: PhoneNumber,
 ): Promise<ApiResponse<void>> => authService.sendOTP(phoneNumber);
 
 const verifyOTPFn = async (
   phoneNumber: PhoneNumber,
-  otp: string
+  otp: string,
 ): Promise<ApiResponse<AccessToken>> => {
   const result = await authService.verifyOTP(phoneNumber, otp);
   if (result.data) {
@@ -91,7 +89,13 @@ const verifyOTPFn = async (
   return result;
 };
 
-export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<PropsWithChildren<AuthProviderProps>> = ({
+  children,
+}) => {
   const {
     isLoading: isLoginLoading,
     error: loginError,

@@ -1,19 +1,19 @@
 import useAsync from 'frontend/contexts/async.hook';
 import { DocumentationService } from 'frontend/services';
 import { ApiResponse, AsyncError } from 'frontend/types';
+import { Nullable } from 'frontend/types/common-types';
 import { MarkdownDocumentation } from 'frontend/types/documentation';
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 
 type DocumentationContextType = {
-  documentation: MarkdownDocumentation | undefined;
-  documentationError: AsyncError | undefined;
-  getDocumentation: () => Promise<MarkdownDocumentation | undefined>;
+  documentation: Nullable<MarkdownDocumentation>;
+  documentationError: Nullable<AsyncError>;
+  getDocumentation: () => Promise<Nullable<MarkdownDocumentation>>;
   isDocumentationLoading: boolean;
 };
 
-const DocumentationContext = createContext<DocumentationContextType | null>(
-  null
-);
+const DocumentationContext =
+  createContext<Nullable<DocumentationContextType>>(null);
 
 const documentationService = new DocumentationService();
 
@@ -21,12 +21,16 @@ export const useDocumentationContext = (): DocumentationContextType =>
   useContext(DocumentationContext) as DocumentationContextType;
 
 const getDocumentationFn = async (): Promise<
-  ApiResponse<MarkdownDocumentation | undefined>
+  ApiResponse<Nullable<MarkdownDocumentation>>
 > => documentationService.getDocumentation();
 
-export const DocumentationProvider: React.FC<PropsWithChildren> = ({
-  children,
-}) => {
+interface DocumentationProviderProps {
+  children: ReactNode;
+}
+
+export const DocumentationProvider: React.FC<
+  PropsWithChildren<DocumentationProviderProps>
+> = ({ children }) => {
   const {
     asyncCallback: getDocumentation,
     error: documentationError,

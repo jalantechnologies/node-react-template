@@ -1,19 +1,20 @@
 import useAsync from 'frontend/contexts/async.hook';
 import { AccountService } from 'frontend/services';
 import { Account, ApiResponse, AsyncError } from 'frontend/types';
+import { Nullable } from 'frontend/types/common-types';
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 
 type AccountContextType = {
   accountDetails: Account;
-  accountError: AsyncError | undefined;
-  deleteAccount: () => Promise<void>;
-  deleteAccountError: AsyncError | undefined;
-  getAccountDetails: () => Promise<Account | undefined>;
+  accountError: Nullable<AsyncError>;
+  deleteAccount: () => Promise<Nullable<void>>;
+  deleteAccountError: Nullable<AsyncError>;
+  getAccountDetails: () => Promise<Nullable<Account>>;
   isAccountLoading: boolean;
   isDeleteAccountLoading: boolean;
 };
 
-const AccountContext = createContext<AccountContextType | null>(null);
+const AccountContext = createContext<Nullable<AccountContextType>>(null);
 
 const accountService = new AccountService();
 
@@ -26,7 +27,13 @@ const getAccountDetailsFn = async (): Promise<ApiResponse<Account>> =>
 const deleteAccountFn = async (): Promise<ApiResponse<void>> =>
   accountService.deleteAccount();
 
-export const AccountProvider: React.FC<PropsWithChildren> = ({ children }) => {
+interface AccountProviderProps {
+  children: ReactNode;
+}
+
+export const AccountProvider: React.FC<
+  PropsWithChildren<AccountProviderProps>
+> = ({ children }) => {
   const {
     isLoading: isAccountLoading,
     error: accountError,
