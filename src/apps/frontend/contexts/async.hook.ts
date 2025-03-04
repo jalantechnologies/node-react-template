@@ -4,7 +4,7 @@ import { Nullable } from 'frontend/types/common-types';
 import { useCallback, useState } from 'react';
 
 const useAsync = <T>(
-  asyncFn: (...args: unknown[]) => Promise<AsyncResult<T>>,
+  asyncFn: (...args: unknown[]) => Promise<AsyncResult<T>>
 ): UseAsyncResponse<T> => {
   const [result, setResult] = useState<Nullable<T>>(null);
   const [isLoading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ const useAsync = <T>(
         setLoading(false);
       }
     },
-    [asyncFn],
+    [asyncFn]
   );
 
   return {

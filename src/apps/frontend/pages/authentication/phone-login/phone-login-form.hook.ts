@@ -34,7 +34,7 @@ const usePhoneLoginForm = ({
     onSubmit: (values) => {
       const parsedPhoneNumber = PhoneNumberUtil.getInstance().parse(
         values.phoneNumber,
-        values.country,
+        values.country
       );
       const isValidPhoneNumber =
         PhoneNumberUtil.getInstance().isValidNumber(parsedPhoneNumber);
@@ -53,7 +53,7 @@ const usePhoneLoginForm = ({
         new PhoneNumber({
           countryCode: values.countryCode,
           phoneNumber: formattedPhoneNumber.toString(),
-        }),
+        })
       )
         .then(() => {
           onSendOTPSuccess();
