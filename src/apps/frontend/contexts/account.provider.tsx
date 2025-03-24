@@ -27,13 +27,7 @@ const getAccountDetailsFn = async (): Promise<ApiResponse<Account>> =>
 const deleteAccountFn = async (): Promise<ApiResponse<void>> =>
   accountService.deleteAccount();
 
-interface AccountProviderProps {
-  children: ReactNode;
-}
-
-export const AccountProvider: React.FC<
-  PropsWithChildren<AccountProviderProps>
-> = ({ children }) => {
+export const AccountProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const {
     isLoading: isAccountLoading,
     error: accountError,

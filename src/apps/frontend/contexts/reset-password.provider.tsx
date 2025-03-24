@@ -31,13 +31,9 @@ const sendForgotPasswordEmailFn = async (
 ): Promise<ApiResponse<void>> =>
   resetPasswordService.sendForgotPasswordEmail(username);
 
-interface ReactPasswordProviderProps {
-  children: ReactNode;
-}
-
-export const ResetPasswordProvider: React.FC<
-  PropsWithChildren<ReactPasswordProviderProps>
-> = ({ children }) => {
+export const ResetPasswordProvider: React.FC<PropsWithChildren> = ({
+  children,
+}) => {
   const {
     isLoading: isSendForgotPasswordEmailLoading,
     error: sendForgotPasswordEmailError,

@@ -24,13 +24,9 @@ const getDocumentationFn = async (): Promise<
   ApiResponse<Nullable<MarkdownDocumentation>>
 > => documentationService.getDocumentation();
 
-interface DocumentationProviderProps {
-  children: ReactNode;
-}
-
-export const DocumentationProvider: React.FC<
-  PropsWithChildren<DocumentationProviderProps>
-> = ({ children }) => {
+export const DocumentationProvider: React.FC<PropsWithChildren> = ({
+  children,
+}) => {
   const {
     asyncCallback: getDocumentation,
     error: documentationError,

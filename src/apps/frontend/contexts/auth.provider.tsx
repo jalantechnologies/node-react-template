@@ -89,13 +89,7 @@ const verifyOTPFn = async (
   return result;
 };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
-
-export const AuthProvider: React.FC<PropsWithChildren<AuthProviderProps>> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const {
     isLoading: isLoginLoading,
     error: loginError,

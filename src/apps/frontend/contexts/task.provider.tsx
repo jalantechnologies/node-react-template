@@ -6,7 +6,6 @@ import { Task } from 'frontend/types/task';
 import React, {
   createContext,
   PropsWithChildren,
-  ReactNode,
   useContext,
   useState,
 } from 'react';
@@ -57,13 +56,7 @@ const deleteTaskFn = async (
   taskId: string
 ): Promise<ApiResponse<Nullable<void>>> => taskService.deleteTask(taskId);
 
-interface TaskProviderProps {
-  children: ReactNode;
-}
-
-export const TaskProvider: React.FC<PropsWithChildren<TaskProviderProps>> = ({
-  children,
-}) => {
+export const TaskProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [tasksList, setTasksList] = useState<Task[]>([]);
 
   const getTasksFn = async (): Promise<ApiResponse<Nullable<Task[]>>> => {
