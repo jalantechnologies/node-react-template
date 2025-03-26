@@ -60,7 +60,9 @@ const PhoneLoginForm: React.FC<PhoneLoginFormProps> = ({
             <FormControl
               label={'Phone'}
               error={
-                formik.touched.countryCode ? formik.errors.countryCode : ''
+                formik.touched.countryCode
+                  ? formik.errors.countryCode
+                  : undefined
               }
             >
               <Select
@@ -74,14 +76,18 @@ const PhoneLoginForm: React.FC<PhoneLoginFormProps> = ({
               <FormControl
                 label={''}
                 error={
-                  formik.touched.phoneNumber ? formik.errors.phoneNumber : ''
+                  formik.touched.phoneNumber
+                    ? formik.errors.phoneNumber
+                    : undefined
                 }
               >
                 <Input
                   data-testid="phoneNumber"
                   disabled={isSendOTPLoading}
                   error={
-                    formik.touched.phoneNumber ? formik.errors.phoneNumber : ''
+                    formik.touched.phoneNumber
+                      ? formik.errors.phoneNumber
+                      : undefined
                   }
                   name="phoneNumber"
                   onChange={handleChangePhone}

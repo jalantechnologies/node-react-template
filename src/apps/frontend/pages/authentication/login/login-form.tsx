@@ -27,7 +27,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onError, onSuccess }) => {
       <VerticalStackLayout gap={5}>
         <FormControl
           label={'Email'}
-          error={formik.touched.username ? formik.errors.username : ''}
+          error={formik.touched.username ? formik.errors.username : undefined}
         >
           <Input
             data-testid="username"
@@ -39,7 +39,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onError, onSuccess }) => {
                 alt="email icon"
               />
             }
-            error={formik.touched.username ? formik.errors.username : ''}
+            error={formik.touched.username ? formik.errors.username : undefined}
             name="username"
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -49,10 +49,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onError, onSuccess }) => {
         </FormControl>
         <FormControl
           label={'Password'}
-          error={formik.touched.password ? formik.errors.password : ''}
+          error={formik.touched.password ? formik.errors.password : undefined}
         >
           <PasswordInput
-            error={formik.touched.password ? formik.errors.password : ''}
+            error={formik.touched.password ? formik.errors.password : undefined}
             name="password"
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}

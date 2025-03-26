@@ -4,6 +4,6 @@ import App from 'frontend/app.component';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-const container = document.getElementById('app');
+const container = document.getElementById('app') as HTMLElement;
 
-ReactDOM.createRoot(container as ReactDOM.Container).render(<App />);
+ReactDOM.createRoot(container).render(<App />);

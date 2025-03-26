@@ -12,7 +12,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   index?: number;
   startEnhancer?: React.ReactElement | string;
   testId?: string;
-  textAlign?: 'left' | 'center' | 'right';
+  textAlign?: keyof typeof styles.textAlign;
   type?: string;
 }
 
