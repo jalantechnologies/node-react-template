@@ -138,8 +138,6 @@ export default class DocumentGeneratorUtil {
   private static extractSerializeMethodName(
     controllerMethodCode: string
   ): Nullable<string> {
-    if (!controllerMethodCode) return null;
-
     const serializeMethodRegex = /serialize\w+AsJSON/g;
     const match = serializeMethodRegex.exec(controllerMethodCode);
     return match ? match[0] : null;
