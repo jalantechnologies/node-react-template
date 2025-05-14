@@ -53,8 +53,8 @@ export class TaskController {
   );
 
   getTasks = applicationController(async (req: Request, res: Response) => {
-    const page = req.query.page ? +req.query.page : 1; // Default to page 1 if not provided
-    const size = req.query.size ? +req.query.size : 10; // Default to size 10 if not provided
+    const page = req.query.page ? +req.query.page : 1;
+    const size = req.query.size ? +req.query.size : 10;
     const params: GetAllTaskParams = {
       accountId: req.accountId!,
       page,
