@@ -7,8 +7,8 @@ import { AsyncError } from '../../types';
 import { Task } from '../../types/task';
 
 interface TaskFormProps {
-  onError?: (error: AsyncError) => void;
-  onSuccess?: () => void;
+  onError: (error: AsyncError) => void;
+  onSuccess: () => void;
 }
 const useTaskForm = ({ onError, onSuccess }: TaskFormProps) => {
   const {
@@ -56,15 +56,17 @@ const useTaskForm = ({ onError, onSuccess }: TaskFormProps) => {
         description: values.description,
       })
         .then((response) => {
-          const newUpdatedTasks = tasksList.map((taskData) => {
-            if (taskData.id === values.id) {
-              return response;
-            }
-            return taskData;
-          });
-          setTasksList(newUpdatedTasks);
-          onSuccess();
-          updateTaskFormik.resetForm();
+          if (response) {
+            const newUpdatedTasks = tasksList.map((taskData) => {
+              if (taskData.id === values.id) {
+                return response;
+              }
+              return taskData;
+            });
+            setTasksList(newUpdatedTasks);
+            onSuccess();
+            updateTaskFormik.resetForm();
+          }
         })
         .catch((error) => onError(error as AsyncError));
     },
@@ -90,9 +92,11 @@ const useTaskForm = ({ onError, onSuccess }: TaskFormProps) => {
     onSubmit: (values) => {
       addTask(values.title, values.description)
         .then((newTask) => {
-          setTasksList([...tasksList, newTask]);
-          onSuccess();
-          addTaskFormik.resetForm();
+          if (newTask) {
+            setTasksList([...tasksList, newTask]);
+            onSuccess();
+            addTaskFormik.resetForm();
+          }
         })
         .catch((error) => {
           onError(error as AsyncError);

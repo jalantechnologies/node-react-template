@@ -7,7 +7,7 @@ import React, { useRef, useState, FocusEventHandler } from 'react';
 import OTPInput from './otp-input';
 
 interface OTPProps {
-  error: string;
+  error?: string;
   isLoading: boolean;
   onBlur?: FocusEventHandler<HTMLInputElement>;
   onChange: (values: string[]) => void;

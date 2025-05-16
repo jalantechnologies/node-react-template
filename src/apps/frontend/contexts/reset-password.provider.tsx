@@ -2,25 +2,25 @@ import { ResetPasswordService } from 'frontend//services';
 import { ApiResponse, AsyncError } from 'frontend//types';
 import useAsync from 'frontend/contexts/async.hook';
 import { ResetPasswordParams } from 'frontend/pages/authentication/reset-password/reset-password-form.hook';
+import { Nullable } from 'frontend/types/common-types';
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 
 type ResetPasswordContextType = {
   isResetPasswordLoading: boolean;
   isSendForgotPasswordEmailLoading: boolean;
-  resetPassword: (params: ResetPasswordParams) => Promise<void>;
-  resetPasswordError: AsyncError;
-  sendForgotPasswordEmail: (username: string) => Promise<void>;
-  sendForgotPasswordEmailError: AsyncError;
+  resetPassword: (params: ResetPasswordParams) => Promise<Nullable<void>>;
+  resetPasswordError: Nullable<AsyncError>;
+  sendForgotPasswordEmail: (username: string) => Promise<Nullable<void>>;
+  sendForgotPasswordEmailError: Nullable<AsyncError>;
 };
 
-const ResetPasswordContext = createContext<ResetPasswordContextType | null>(
-  null
-);
+const ResetPasswordContext =
+  createContext<Nullable<ResetPasswordContextType>>(null);
 
 const resetPasswordService = new ResetPasswordService();
 
 export const useResetPasswordContext = (): ResetPasswordContextType =>
-  useContext(ResetPasswordContext);
+  useContext(ResetPasswordContext) as ResetPasswordContextType;
 
 const resetPasswordFn = async (
   params: ResetPasswordParams

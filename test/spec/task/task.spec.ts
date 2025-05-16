@@ -194,7 +194,8 @@ describe('Task API', () => {
       expect(res.status).to.eq(204);
 
       const updatedToken = await TaskRepository.findById(task.id);
-      expect(updatedToken.active).to.be.false;
+
+      expect(updatedToken!.active).to.be.false;
     });
   });
 });

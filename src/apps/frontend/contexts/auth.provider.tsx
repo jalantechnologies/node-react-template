@@ -6,6 +6,7 @@ import {
   AsyncError,
   PhoneNumber,
 } from 'frontend/types';
+import { Nullable } from 'frontend/types/common-types';
 import {
   getAccessTokenFromStorage,
   removeAccessTokenFromStorage,
@@ -19,29 +20,33 @@ type AuthContextType = {
   isSignupLoading: boolean;
   isUserAuthenticated: () => boolean;
   isVerifyOTPLoading: boolean;
-  login: (username: string, password: string) => Promise<AccessToken>;
-  loginError: AsyncError;
-  loginResult: AccessToken;
+  login: (username: string, password: string) => Promise<Nullable<AccessToken>>;
+  loginError: Nullable<AsyncError>;
+  loginResult: Nullable<AccessToken>;
   logout: () => void;
-  sendOTP: (phoneNumber: PhoneNumber) => Promise<void>;
-  sendOTPError: AsyncError;
+  sendOTP: (phoneNumber: PhoneNumber) => Promise<Nullable<void>>;
+  sendOTPError: Nullable<AsyncError>;
   signup: (
     firstName: string,
     lastName: string,
     username: string,
     password: string
-  ) => Promise<void>;
-  signupError: AsyncError;
-  verifyOTP: (phoneNumber: PhoneNumber, otp: string) => Promise<AccessToken>;
-  verifyOTPError: AsyncError;
-  verifyOTPResult: AccessToken;
+  ) => Promise<Nullable<void>>;
+  signupError: Nullable<AsyncError>;
+  verifyOTP: (
+    phoneNumber: PhoneNumber,
+    otp: string
+  ) => Promise<Nullable<AccessToken>>;
+  verifyOTPError: Nullable<AsyncError>;
+  verifyOTPResult: Nullable<AccessToken>;
 };
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<Nullable<AuthContextType>>(null);
 
 const authService = new AuthService();
 
-export const useAuthContext = (): AuthContextType => useContext(AuthContext);
+export const useAuthContext = (): AuthContextType =>
+  useContext(AuthContext) as AuthContextType;
 
 const loginFn = async (
   username: string,
@@ -64,7 +69,8 @@ const signupFn = async (
 
 const logoutFn = (): void => removeAccessTokenFromStorage();
 
-const getAccessToken = (): AccessToken => getAccessTokenFromStorage();
+const getAccessToken = (): AccessToken =>
+  getAccessTokenFromStorage() as AccessToken;
 
 const isUserAuthenticated = () => !!getAccessToken();
 
