@@ -8,6 +8,7 @@ Boilerplate project for NodeJS, React based projects in TypeScript. This README 
 - [Configuration](#configuration)
 - [Integrations](#integrations)
 - [Deployment](#deployment)
+- [Running Scripts in Production](./running-scripts-in-production.md)
 - [E2E Testing](#e2e-testing)
 
 ## Getting Started
