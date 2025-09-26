@@ -1,4 +1,4 @@
-name: preview_deploy_main
+name: permanent_preview
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - punith/feat/add-permanent-preview-app
 
 jobs:
-  preview-deploy-main:
+  permanent_preview:
     uses: jalantechnologies/github-ci/.github/workflows/ci.yml@v2.5
     concurrency:
       group: ci-preview-main
