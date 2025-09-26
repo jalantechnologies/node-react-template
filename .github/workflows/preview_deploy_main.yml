@@ -1,4 +1,4 @@
-name: Preview Deploy from Main
+name: preview_deploy_main
 
 on:
   push:
