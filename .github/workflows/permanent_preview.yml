@@ -9,7 +9,7 @@ jobs:
   permanent_preview:
     uses: jalantechnologies/github-ci/.github/workflows/ci.yml@v2.5
     concurrency:
-      group: ci-preview-main
+      group: ci-permanent-preview
       cancel-in-progress: true
     with:
       app_name: boilerplate-mern
