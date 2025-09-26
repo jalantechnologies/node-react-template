@@ -99,6 +99,22 @@ This project support following integrations
 
 This project deploys on Kubernetes via GitHub actions using workflows defined in [GitHub CI](https://github.com/jalantechnologies/github-ci).
 
+### Environments
+
+This project has three deployment environments that everyone can access:
+
+- **Production**
+  - The live app for end users.
+  - URL: [https://boilerplate-mern.platform.jalantechnologies.com](https://boilerplate-mern.platform.jalantechnologies.com)
+
+- **Preview**
+  - A preview environment for testing the latest changes.
+  - URL: [https://<github_sha>.preview.platform.jalantechnologies.com](https://<github_sha>.preview.platform.jalantechnologies.com)
+
+- **Permanent Preview**
+  - A stable preview environment that always runs the latest main branch.
+  - URL: [https://preview--boilerplate-mern.platform.jalantechnologies.com](https://preview--boilerplate-mern.platform.jalantechnologies.com)
+
 ## E2E Testing
 
 **Pre Requirements:**
