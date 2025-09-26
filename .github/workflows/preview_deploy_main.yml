@@ -3,7 +3,7 @@ name: Preview Deploy from Main
 on:
   push:
     branches:
-      - main
+      - punith/feat/add-permanent-preview-app
 
 jobs:
   preview-deploy-main:
@@ -15,7 +15,7 @@ jobs:
       app_name: boilerplate-mern
       app_env: preview
       app_hostname: preview--boilerplate-mern.platform.jalantechnologies.com
-      branch: main
+      branch: punith/feat/add-permanent-preview-app
       checks: "['npm:lint', 'compose:test', 'compose:e2e']"
       docker_registry: ${{ vars.DOCKER_REGISTRY }}
       docker_username: ${{ vars.DOCKER_USERNAME }}
