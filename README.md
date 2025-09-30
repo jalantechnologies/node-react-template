@@ -10,12 +10,13 @@ This project has three deployment environments that everyone can access:
   - The live app for end users.
   - URL: [https://boilerplate-mern.platform.jalantechnologies.com](https://boilerplate-mern.platform.jalantechnologies.com)
 
-- **Preview**
-  - A preview environment for testing the latest changes.
-  - URL: [https://<github_sha>.preview.platform.jalantechnologies.com](https://<github_sha>.preview.platform.jalantechnologies.com)
+- **Preview (per PR)**
+  - A temporary environment for testing the latest changes in each PR
+  - A unique URL is generated for every pull request (e.g. `https://<github_sha>.preview.platform.jalantechnologies.com`).
 
 - **Permanent Preview**
-  - A stable preview environment that always runs the latest main branch.
+  - Always reflects the latest `main` branch.
+  - Useful for ongoing testing of the integrated codebase.
   - URL: [https://preview--boilerplate-mern.platform.jalantechnologies.com](https://preview--boilerplate-mern.platform.jalantechnologies.com)
 
 ## Table of Contents
