@@ -14,7 +14,7 @@ jobs:
     with:
       app_name: boilerplate-mern
       app_env: production
-      app_hostname: boilerplate-mern.platform.jalantechnologies.com
+      app_hostname: node-react-template.platform.bettrhq.com
       branch: ${{ github.event.ref }}
       checks: "['npm:lint', 'compose:test', 'compose:e2e']"
       docker_registry: ${{ vars.DOCKER_REGISTRY }}
