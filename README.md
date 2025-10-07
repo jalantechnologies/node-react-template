@@ -8,16 +8,16 @@ This project has three deployment environments that everyone can access:
 
 - **Production**
   - The live app for end users.
-  - URL: [https://boilerplate-mern.platform.jalantechnologies.com](https://boilerplate-mern.platform.jalantechnologies.com)
+  - URL: [https://node-react-template.platform.bettrhq.com](https://node-react-template.platform.bettrhq.com)
 
 - **Preview (per PR)**
   - A temporary environment for testing the latest changes in each PR
-  - A unique URL is generated for every pull request (e.g. `https://<github_sha>.preview.platform.jalantechnologies.com`).
+  - A unique URL is generated for every pull request (e.g. `https://<github_sha>.preview.platform.bettrhq.com`).
 
 - **Permanent Preview**
   - Always reflects the latest `main` branch.
   - Useful for ongoing testing of the integrated codebase.
-  - URL: [https://preview--boilerplate-mern.platform.jalantechnologies.com](https://preview--boilerplate-mern.platform.jalantechnologies.com)
+  - URL: [https://preview--node-react-template.platform.bettrhq.com](https://preview--node-react-template.platform.bettrhq.com)
 
 ## Table of Contents
 
