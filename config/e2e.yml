@@ -5,7 +5,7 @@ documentation:
   enabled: false
 
 mongoDb:
-  uri: 'mongodb://localhost:27017/boilerplate-mern-e2e'
+  uri: 'mongodb://localhost:27017/node-react-template-e2e'
 
 openai:
   apiKey: 'OPENAI_API_KEY'

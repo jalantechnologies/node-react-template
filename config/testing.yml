@@ -17,7 +17,7 @@ sms:
   enabled: false
 
 mongoDb:
-  uri: 'mongodb://localhost:27017/boilerplate-mern-test'
+  uri: 'mongodb://localhost:27017/node-react-template-test'
 
 test:
   boolTestKey: true

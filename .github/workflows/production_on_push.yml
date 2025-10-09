@@ -12,7 +12,7 @@ jobs:
       group: ci-production-${{ github.event.ref }}
       cancel-in-progress: true
     with:
-      app_name: boilerplate-mern
+      app_name: node-react-template
       app_env: production
       app_hostname: node-react-template.platform.bettrhq.com
       branch: ${{ github.event.ref }}

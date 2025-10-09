@@ -11,7 +11,7 @@ jobs:
       group: ci-preview-${{ github.event.ref }}
       cancel-in-progress: true
     with:
-      app_name: boilerplate-mern
+      app_name: node-react-template
       app_env: preview
       branch: ${{ github.event.ref }}
       docker_registry: ${{ vars.DOCKER_REGISTRY }}

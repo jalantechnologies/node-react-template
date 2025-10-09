@@ -2,7 +2,7 @@ accounts:
   tokenExpiry: '1d' # default token expire time 1 day. Examples - https://github.com/vercel/ms#examples
 
 datadog:
-  app_name: 'boilerplate-mern'
+  app_name: 'node-react-template'
   region: 'us5'
 
 logger:
