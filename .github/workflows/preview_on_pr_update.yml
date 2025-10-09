@@ -14,7 +14,7 @@ jobs:
       cancel-in-progress: true
     with:
       analyze_base: main
-      app_name: boilerplate-mern
+      app_name: node-react-template
       app_env: preview
       app_hostname: '{1}.preview.platform.bettrhq.com'
       branch: ${{ github.event.pull_request.head.ref }}
