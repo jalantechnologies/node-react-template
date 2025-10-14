@@ -1,4 +1,4 @@
-# Boilerplate - MERN
+# NODE-REACT-TEMPLATE
 
 Boilerplate project for NodeJS, React based projects in TypeScript. This README documents whatever steps are necessary to get your application up and running.
 
