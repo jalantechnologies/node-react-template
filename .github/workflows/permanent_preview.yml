@@ -14,7 +14,7 @@ jobs:
     with:
       app_name: boilerplate-mern
       app_env: preview
-      app_hostname: preview--node-react-template.platform.bettrhq.com
+      app_hostname: preview.node-react-template.platform.bettrhq.com
       branch: main
       checks: "['npm:lint', 'compose:test', 'compose:e2e']"
       docker_registry: ${{ vars.DOCKER_REGISTRY }}
