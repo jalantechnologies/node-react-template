@@ -2,7 +2,7 @@ version: '3'
 
 services:
   app:
-    image: 'boilerplate-mern'
+    image: 'node-react-template'
     build:
       context: .
       dockerfile: Dockerfile

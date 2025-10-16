@@ -9,7 +9,7 @@ sms:
   enabled: false
 
 mongoDb:
-  uri: 'mongodb://localhost:27017/boilerplate-mern-dev'
+  uri: 'mongodb://localhost:27017/node-react-template-dev'
 
 # This is added to avoid the error due to dependency of api key. This can be overridden in local.yml file.
 openai:

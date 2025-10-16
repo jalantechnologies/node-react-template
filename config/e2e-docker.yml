@@ -1,5 +1,5 @@
 mongoDb:
-  uri: 'mongodb://db:27017/boilerplate-mern-e2e'
+  uri: 'mongodb://db:27017/node-react-template-e2e'
 
 public:
   authenticationMechanism: 'EMAIL'

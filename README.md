@@ -1,4 +1,4 @@
-# Boilerplate - MERN
+# NODE-REACT-TEMPLATE
 
 Boilerplate project for NodeJS, React based projects in TypeScript. This README documents whatever steps are necessary to get your application up and running.
 
@@ -8,11 +8,11 @@ This project has three deployment environments that everyone can access:
 
 - **Production**
   - The live app for end users.
-  - URL: [https://boilerplate-mern.platform.jalantechnologies.com](https://boilerplate-mern.platform.jalantechnologies.com)
+  - URL: [https://node-react-template.platform.bettrhq.com](https://node-react-template.platform.bettrhq.com)
 
 - **Preview (per PR)**
   - A temporary environment for testing the latest changes in each PR
-  - A unique URL is generated for every pull request (e.g. `https://<github_sha>.preview.platform.jalantechnologies.com`).
+  - A unique URL is generated for every pull request (e.g. `https://<github_sha>.preview.platform.bettrhq.com`).
 
 - **Permanent Preview**
   - Always reflects the latest `main` branch.
@@ -108,7 +108,7 @@ This project support following integrations
 
 | Name    | Type   | Documentation                                                                                    | Configuration                                                                                                                                                                                                                                                                                                                                                                                        |
 |---------|--------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| DataDog | Logger | -Create a dedicated public channel named "Error Alerts" within your MS Teams workspace. This centralized space will serve as a hub for all error-related communications.<br>-Streamline the error alert process by integrating the "Error Alerts" channel with DataDog. This integration enhances communication and incident response. <br>-Guidance on Integration<br>  https://jalantechnologies.com/uncategorized/push-notifications-from-datadog-to-microsoft-teams/<br>-For implementation, refer the following links<br>-PR: https://github.com/jalantechnologies/boilerplate-mern/pull/88<br>-docs: https://docs.datadoghq.com/logs/log_collection/nodejs/?tab=winston30 | - logger.transports = ['datadog']<br>- datadog.api_key - <DATADOG_CLIENT_TOKEN><br>- datadog.app_name - <DATADOG_CLIENT_TOKEN_NAME> <br> in this implementation these are not the datadog's api key and name, to generate these, create a client token under Organisational settings > Client token<br> refer docs under logs > getting started > client for more info |
+| DataDog | Logger | -Create a dedicated public channel named "Error Alerts" within your MS Teams workspace. This centralized space will serve as a hub for all error-related communications.<br>-Streamline the error alert process by integrating the "Error Alerts" channel with DataDog. This integration enhances communication and incident response. <br>-Guidance on Integration<br>  https://jalantechnologies.com/uncategorized/push-notifications-from-datadog-to-microsoft-teams/<br>-For implementation, refer the following links<br>-PR: https://github.com/jalantechnologies/node-react-template/pull/88<br>-docs: https://docs.datadoghq.com/logs/log_collection/nodejs/?tab=winston30 | - logger.transports = ['datadog']<br>- datadog.api_key - <DATADOG_CLIENT_TOKEN><br>- datadog.app_name - <DATADOG_CLIENT_TOKEN_NAME> <br> in this implementation these are not the datadog's api key and name, to generate these, create a client token under Organisational settings > Client token<br> refer docs under logs > getting started > client for more info |
 | Inspectlet | Analytics | https://docs.inspectlet.com/hc/en-us/articles/206355438-Installing-Inspectlet | - inspectlet.wid = Unique Inspectlet key provided by inspectlet |         
 |        |                                                                                                  |                                                                                                                                                                                                                                                                                                                                                                                                      |
 
