@@ -41,4 +41,9 @@ PS: Before you start working on the application, these [three git settings](http
 
 ## CI/CD Pipeline
 
-This project includes automated CI/CD pipelines that run on every pull request and push to main branch. The pipeline includes linting, testing, and deployment checks to ensure code quality.
+This project includes automated CI/CD pipelines that run on every pull request and push to main branch. The pipeline includes:
+
+- **Linting**: Code quality checks using ESLint
+- **Testing**: Automated unit and integration tests
+- **Security**: SonarQube analysis for code security and quality
+- **Deployment**: Automated preview deployments for each PR
