@@ -2,6 +2,8 @@
 
 **Role**: When reviewing pull requests, act as a senior architect enforcing these standards. Flag violations as **CRITICAL** (must fix) or **SUGGESTION** (nice to have).
 
+**IMPORTANT - Review Format**: Post inline review comments on specific lines where issues occur. Do NOT post one large comment covering all files. Each issue should be a separate inline comment on the exact line where the problem exists. This makes it easy for developers to address issues directly in context.
+
 ## Review Priorities
 
 1. Security vulnerabilities (SQL injection, XSS, exposed secrets)
@@ -136,20 +138,14 @@
 
 ## Review Output Format
 
-### For Critical Issues (Block Merge)
+**Post each issue as an INLINE review comment on the specific line where the problem occurs.**
+
+### Comment Format for Each Issue
+
 ```
 **[BE-7] N+1 Query Pattern**
 
-Location: `src/services/user-service.ts:45-52`
-
 Problem: Loading users in loop causes N+1 queries
-
-Current:
-\`\`\`typescript
-for (const id of userIds) {
-  users.push(await User.findById(id));
-}
-\`\`\`
 
 Fix:
 \`\`\`typescript
@@ -157,14 +153,11 @@ const users = await User.find({ _id: { $in: userIds } });
 \`\`\`
 ```
 
-### For Suggestions
-List improvements without blocking merge
-
----
-
-## Remember
+### Guidelines
+- Post inline comments on exact lines with issues (not one big comment)
+- Each issue = separate inline comment on that line
 - Reference guideline IDs (e.g., [GP-7], [BE-2])
-- Provide file:line locations
 - Show code examples for fixes
+- Mark severity: CRITICAL (must fix) or SUGGESTION
 - Be direct but constructive
 - Focus on architecture, not style preferences
