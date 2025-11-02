@@ -63,7 +63,7 @@ jobs:
 
   review:
     if: github.event.pull_request.draft == false
-    uses: jalantechnologies/node-react-template-review-agent/.github/workflows/review.yml@dc7c7f7
+    uses: jalantechnologies/node-react-template-review-agent/.github/workflows/review.yml@main
     with:
       pr_number: ${{ github.event.number }}
       repo_owner: ${{ github.repository_owner }}
