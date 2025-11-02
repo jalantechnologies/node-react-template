@@ -1,4 +1,4 @@
-name: Preview Environment (PR)
+name: preview_on_pr_update
 
 on:
   pull_request:

@@ -1,4 +1,4 @@
-name: Permanent Preview Deployment
+name: permanent_preview
 
 on:
   push:
