@@ -1,4 +1,4 @@
-## Running Scripts in Production
+# Running Scripts in Production
 
 > ⚠️ **Warning:** Running scripts directly in the production environment can impact live users. Use this guide responsibly and with proper approvals.
 
