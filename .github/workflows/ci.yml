@@ -73,19 +73,29 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // Check if we already posted a review request for this PR
-            const comments = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
+            const eventAction = context.payload.action;
+            console.log('PR event action:', eventAction);
 
-            const reviewRequestExists = comments.data.some(comment =>
-              comment.user.type === 'Bot' &&
-              comment.body.includes('@claude review')
-            );
+            // Always request review on new commits (synchronize)
+            // For opened/reopened, check if review already requested to avoid duplicates
+            let shouldRequestReview = eventAction === 'synchronize';
 
-            if (!reviewRequestExists) {
+            if (!shouldRequestReview && (eventAction === 'opened' || eventAction === 'reopened')) {
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+
+              const reviewRequestExists = comments.data.some(comment =>
+                comment.user.type === 'Bot' &&
+                comment.body.includes('@claude review')
+              );
+
+              shouldRequestReview = !reviewRequestExists;
+            }
+
+            if (shouldRequestReview) {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
