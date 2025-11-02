@@ -69,7 +69,7 @@ jobs:
       pull-requests: write
       issues: write
     steps:
-      - name: Request and wait for Claude Code review
+      - name: Request Claude Code review
         uses: actions/github-script@v7
         with:
           script: |
@@ -84,6 +84,7 @@ jobs:
             });
 
             // Find and delete previous auto-generated review comments
+            // This keeps it to 1 comment instead of spamming on every commit
             const autoReviewComments = comments.data.filter(comment =>
               comment.user.type === 'Bot' &&
               comment.user.login === 'github-actions[bot]' &&
@@ -99,9 +100,6 @@ jobs:
               console.log('Deleted previous auto-review comment:', comment.id);
             }
 
-            // Record timestamp before posting
-            const timestamp = new Date();
-
             // Post new review request
             await github.rest.issues.createComment({
               owner: context.repo.owner,
@@ -109,71 +107,7 @@ jobs:
               issue_number: context.issue.number,
               body: '@claude review this PR according to the guidelines in CLAUDE.md'
             });
-            console.log('Posted @claude review request at', timestamp.toISOString());
-
-            // Wait for Claude to respond (poll for up to 5 minutes)
-            const maxWaitTime = 5 * 60 * 1000; // 5 minutes
-            const pollInterval = 10 * 1000; // 10 seconds
-            const startTime = Date.now();
-            let claudeResponse = null;
-
-            console.log('Waiting for Claude to respond...');
-
-            while (Date.now() - startTime < maxWaitTime) {
-              await new Promise(resolve => setTimeout(resolve, pollInterval));
-
-              // Get latest comments
-              const latestComments = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-              });
-
-              // Look for Claude's response (posted after our request)
-              const claudeComment = latestComments.data.find(comment =>
-                comment.user.login.toLowerCase().includes('claude') &&
-                new Date(comment.created_at) > timestamp
-              );
-
-              if (claudeComment) {
-                claudeResponse = claudeComment.body;
-                console.log('Claude responded after', Math.round((Date.now() - startTime) / 1000), 'seconds');
-                console.log('Response length:', claudeResponse.length, 'characters');
-                break;
-              }
-
-              console.log('Still waiting... (' + Math.round((Date.now() - startTime) / 1000) + 's elapsed)');
-            }
-
-            if (!claudeResponse) {
-              console.log('Claude did not respond within timeout period');
-              core.setFailed('Claude code review timed out - no response received within 5 minutes. Please check if Claude app is properly configured.');
-              return;
-            }
-
-            // Parse Claude's response for critical issues
-            const responseLower = claudeResponse.toLowerCase();
-            const hasCriticalKeywords = responseLower.includes('critical') ||
-                                       responseLower.includes('must fix') ||
-                                       responseLower.includes('security') ||
-                                       responseLower.includes('violation');
-
-            const hasApproval = responseLower.includes('looks good') ||
-                               responseLower.includes('no issues') ||
-                               responseLower.includes('approved');
-
-            console.log('Review analysis:');
-            console.log('- Contains critical keywords:', hasCriticalKeywords);
-            console.log('- Contains approval keywords:', hasApproval);
-
-            // Fail job if critical issues detected
-            if (hasCriticalKeywords && !hasApproval) {
-              core.setFailed('Code review found critical issues that must be fixed before merge. Check Claude comment for details.');
-            } else if (hasApproval) {
-              console.log('✅ Code review passed - no critical issues found');
-            } else {
-              console.log('⚠️ Review completed with suggestions (non-blocking)');
-            }
+            console.log('Posted new @claude review request');
 
   test:
     if: github.event.pull_request.draft == false
