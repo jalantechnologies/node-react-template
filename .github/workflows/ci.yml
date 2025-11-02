@@ -6,7 +6,7 @@ on:
 
 jobs:
   lint:
-    if: ${{ !github.event.pull_request.draft }}
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -28,7 +28,7 @@ jobs:
         run: npm run lint:md
 
   sonarqube:
-    if: ${{ !github.event.pull_request.draft }}
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -62,7 +62,7 @@ jobs:
           pull_request_number: ${{ github.event.number }}
 
   review:
-    if: ${{ !github.event.pull_request.draft }}
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -277,7 +277,7 @@ ${reviewText}
             }
 
   test:
-    if: ${{ !github.event.pull_request.draft }}
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
