@@ -62,7 +62,7 @@ jobs:
           pull_request_number: ${{ github.event.number }}
 
   review:
-    if: github.event.pull_request.draft == false && (vars.CODE_REVIEW_ANTHROPIC_API_KEY != '' || secrets.CODE_REVIEW_ANTHROPIC_API_KEY != '')
+    if: ${{ github.event.pull_request.draft == false && (vars.CODE_REVIEW_ANTHROPIC_API_KEY != '' || secrets.CODE_REVIEW_ANTHROPIC_API_KEY != '') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
