@@ -4,53 +4,49 @@ This project uses **GitHub Actions** for continuous integration and deployment o
 
 ---
 
-## CI Pipeline
+## CI/CD Pipeline Structure
 
-When you open or update a pull request, two independent tracks run in parallel:
+When you open or update a pull request, CI and CD workflows run independently:
 
 ```mermaid
 graph TB
     Start([PR Opened/Updated])
 
-    Start --> QualityTrack[Quality Checks Track<br/>Advisory]
-    Start --> BuildTrack[Build & Test Track<br/>Functional Validation]
+    Start --> CI[CI Workflow<br/>Code Quality & Testing]
+    Start --> CD[CD Workflow<br/>Build & Deploy]
 
-    QualityTrack --> Lint[Lint<br/>~30s]
-    QualityTrack --> Sonar[SonarQube Analysis<br/>~60s]
+    CI --> Lint[ci/lint<br/>~30s]
+    CI --> Sonar[ci/sonarqube<br/>~60s]
+    CI --> Review[ci/review<br/>~90s]
+    CI --> Test[ci/test<br/>~1 min]
 
-    Lint --> CodeReview[Code Review<br/>~90s]
-    Sonar --> CodeReview
+    CD --> Deploy[cd/deploy<br/>~3-4 min<br/>builds + deploys]
 
-    BuildTrack --> Build[Build Docker Image<br/>~2-3 min]
-    Build --> Tests[Integration Tests<br/>~1 min]
-    Build --> Deploy[Deploy Preview<br/>~1 min]
-
-    CodeReview --> End([Complete])
-    Tests --> End
+    Lint --> End([Complete])
+    Sonar --> End
+    Review --> End
+    Test --> End
     Deploy --> End
 
-    style QualityTrack fill:#e1f5ff
-    style BuildTrack fill:#fff4e1
-    style CodeReview fill:#d4edda
+    style CI fill:#e1f5ff
+    style CD fill:#fff4e1
     style Deploy fill:#d4edda
 ```
 
-### Quality Checks Track (Advisory)
-Provides code quality feedback without blocking deployments:
+### CI Workflow (Code Quality & Testing)
+All jobs run in parallel and independently:
 
-1. **Lint** (~30s) - ESLint and Markdown checks for code style and potential errors
-2. **SonarQube Analysis** (~60s) - Code quality metrics, complexity, and code smells
-3. **Code Review** (~90s) - Automated code review (runs only after lint and SonarQube pass)
+1. **ci/lint** (~30s) - ESLint and Markdown checks for code style and potential errors
+2. **ci/sonarqube** (~60s) - Code quality metrics, complexity, and code smells
+3. **ci/review** (~90s) - Automated code review (placeholder for future AI-powered review)
+4. **ci/test** (~1 min) - Integration tests with MongoDB using docker-compose
 
-### Build & Test Track
-Validates functionality and deploys preview environments:
+### CD Workflow (Build & Deploy)
+Single job that builds Docker image and deploys:
 
-1. **Build Docker Image** (~2-3 min) - Creates containerized application
-2. **Integration Tests & Deploy Preview** (parallel after build):
-   - **Integration Tests** (~1 min) - Runs `compose:test` with MongoDB
-   - **Deploy Preview** (~1 min) - Deploys to `{pr-name}.preview.platform.bettrhq.com`
+1. **cd/deploy** (~3-4 min) - Builds Docker image and deploys to `{pr-name}.preview.platform.bettrhq.com`
 
-**Note:** Code merged to `main` must go through pull requests with passing quality checks. Production and permanent preview deployments skip redundant checks since they've already been validated at the PR level.
+**Note:** All CI checks are advisory and run independently. CD deploys regardless of CI status to enable fast iteration. Code merged to `main` should have passing CI checks from the PR.
 
 ---
 
@@ -80,20 +76,16 @@ This ensures every PR can be tested independently before merging.
 
 ---
 
-## CD Pipeline (Deployment Workflows)
+## Deployment Workflows
 
-Deployments are handled via **GitHub Actions** and [github-ci](https://github.com/jalantechnologies/github-ci).
-
-### Deployment Workflows
-
-- **Preview Environment (PR)** - Automatic preview deployment for each PR
-- **Production Deployment** - Deploys to production when code is merged to `main`
-- **Permanent Preview Deployment** - Updates permanent preview when `main` changes
+### CD Workflows
+- **cd** - Deploys preview environment for each PR (`cd/deploy`)
+- **cd_production** - Deploys to production when code is merged to `main` (`cd_production/deploy`)
+- **cd_permanent_preview** - Updates permanent preview when `main` changes (`cd_permanent_preview/deploy`)
 
 ### Cleanup Workflows
+- **cleanup_pr** - Automatically removes preview environment when PR is closed
+- **cleanup_branch** - Automatically removes preview environment when branch is deleted
+- **cleanup_manual** - Allows manual cleanup of preview environments via workflow dispatch
 
-- **Cleanup on PR Close** - Automatically removes preview environment when PR is closed
-- **Cleanup on Branch Delete** - Automatically removes preview environment when branch is deleted
-- **Manual Cleanup** - Allows manual cleanup of preview environments via workflow dispatch
-
-All credentials and secrets are securely managed via GitHub secrets and environment variables
+All credentials and secrets are securely managed via GitHub secrets and environment variables. Deployments use github-ci actions for Docker image building and Kubernetes deployment to DigitalOcean.
