@@ -76,34 +76,38 @@ jobs:
             const eventAction = context.payload.action;
             console.log('PR event action:', eventAction);
 
-            // Only auto-trigger on PR open/reopen, not on every commit
-            // Developers can manually request re-review by commenting "@claude review"
-            if (eventAction === 'opened' || eventAction === 'reopened') {
-              const comments = await github.rest.issues.listComments({
+            // Get all comments
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            // Find and delete previous auto-generated review comments
+            // This keeps it to 1 comment instead of spamming on every commit
+            const autoReviewComments = comments.data.filter(comment =>
+              comment.user.type === 'Bot' &&
+              comment.user.login === 'github-actions[bot]' &&
+              comment.body.includes('@claude review')
+            );
+
+            for (const comment of autoReviewComments) {
+              await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.issue.number,
+                comment_id: comment.id,
               });
-
-              const reviewRequestExists = comments.data.some(comment =>
-                comment.user.type === 'Bot' &&
-                comment.body.includes('@claude review')
-              );
-
-              if (!reviewRequestExists) {
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.issue.number,
-                  body: '@claude review this PR according to the guidelines in CLAUDE.md'
-                });
-                console.log('Posted @claude review request');
-              } else {
-                console.log('Review request already exists, skipping');
-              }
-            } else {
-              console.log('Not an open/reopen event, skipping auto-review. Developers can manually comment "@claude review" to request re-review.');
+              console.log('Deleted previous auto-review comment:', comment.id);
             }
+
+            // Post new review request
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '@claude review this PR according to the guidelines in CLAUDE.md'
+            });
+            console.log('Posted new @claude review request');
 
   test:
     if: github.event.pull_request.draft == false
