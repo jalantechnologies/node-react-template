@@ -62,7 +62,7 @@ jobs:
           pull_request_number: ${{ github.event.number }}
 
   review:
-    if: github.event.pull_request.draft == false && (vars.CODE_REVIEW_ANTHROPIC_API_KEY != '' || secrets.CODE_REVIEW_ANTHROPIC_API_KEY != '')
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -200,7 +200,8 @@ jobs:
             const apiKey = process.env.ANTHROPIC_API_KEY;
 
             if (!apiKey) {
-              core.setFailed('ANTHROPIC_API_KEY not found');
+              console.log('ANTHROPIC_API_KEY not configured - skipping automated review');
+              console.log('To enable automated reviews, add CODE_REVIEW_ANTHROPIC_API_KEY to repository secrets or variables');
               return;
             }
 
