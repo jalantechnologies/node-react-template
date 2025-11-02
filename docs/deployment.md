@@ -8,6 +8,28 @@ This project uses **GitHub Actions** for continuous integration and deployment o
 
 When you open or update a pull request, two independent tracks run in parallel:
 
+```
+PR Opened/Updated
+    │
+    ├─────────────────────────────────┬─────────────────────────────────┐
+    │                                 │                                 │
+    │  Quality Checks Track           │  Build & Test Track             │
+    │  (Advisory)                     │  (Functional Validation)        │
+    │                                 │                                 │
+    ├─── Lint (~30s)                  └─── Build Docker (~2-3min)      │
+    │                                           │                       │
+    ├─── SonarQube (~60s)                      ├─── Integration Tests (~1min)
+    │                                           │                       │
+    │                                           └─── Deploy Preview (~1min)
+    │                                                                   │
+    └─── Code Review (~90s)                                            │
+         (runs only after                                              │
+          lint & SonarQube pass)                                       │
+                                                                        │
+                                                                        ▼
+                                                                     Complete
+```
+
 ### Quality Checks Track (Advisory)
 Provides code quality feedback without blocking deployments:
 
