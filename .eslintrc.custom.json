@@ -1,0 +1,18 @@
+{
+  "plugins": ["local-rules"],
+  "rules": {
+    "local-rules/no-internal-imports": "error",
+    "local-rules/no-generic-names": "warn",
+    "local-rules/no-repository-in-controller": "error",
+    "local-rules/require-error-classes": "warn",
+    "local-rules/no-any-type": "warn",
+    "local-rules/no-inline-styles-react": "warn",
+    "local-rules/no-direct-axios-in-components": "error",
+    "local-rules/max-function-lines": [
+      "warn",
+      {
+        "max": 50
+      }
+    ]
+  }
+}
