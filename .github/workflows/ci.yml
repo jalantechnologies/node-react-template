@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   pull_request:
@@ -64,11 +64,218 @@ jobs:
   review:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      - name: Placeholder for code review
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
         run: |
-          echo "Code review placeholder"
-          echo "Future implementation: AI-powered review for architecture, security, and best practices"
+          # Get list of changed files in this PR
+          git fetch origin ${{ github.base_ref }}
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Get file contents for changed files
+        id: file-contents
+        run: |
+          mkdir -p /tmp/review-files
+
+          # Read each changed file and store content
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              # Only include source files (not binaries, images, etc.)
+              if [[ "$file" =~ \.(ts|tsx|js|jsx|py|java|go|rs|cpp|c|h|md|yml|yaml|json|sql)$ ]]; then
+                echo "=== FILE: $file ===" >> /tmp/review-files/all-changes.txt
+                cat "$file" >> /tmp/review-files/all-changes.txt
+                echo -e "\n\n" >> /tmp/review-files/all-changes.txt
+              fi
+            fi
+          done <<< "${{ steps.changed-files.outputs.changed_files }}"
+
+      - name: Load review guidelines
+        id: guidelines
+        run: |
+          GUIDELINES_DIR=".github/code-review-guidelines"
+          GUIDELINES_FILE="/tmp/guidelines.md"
+
+          if [ -d "$GUIDELINES_DIR" ]; then
+            echo "# Code Review Guidelines" > "$GUIDELINES_FILE"
+            echo "" >> "$GUIDELINES_FILE"
+
+            # Load all guideline files
+            find "$GUIDELINES_DIR" -name "*.md" ! -name "README.md" ! -name "TEMPLATE.md" -type f | sort | while read -r file; do
+              cat "$file" >> "$GUIDELINES_FILE"
+              echo -e "\n---\n" >> "$GUIDELINES_FILE"
+            done
+
+            echo "guidelines_exist=true" >> $GITHUB_OUTPUT
+            echo "Loaded $(find "$GUIDELINES_DIR" -name "*.md" ! -name "README.md" ! -name "TEMPLATE.md" -type f | wc -l) guideline files"
+          else
+            echo "guidelines_exist=false" >> $GITHUB_OUTPUT
+            echo "No guidelines directory found"
+          fi
+
+      - name: Perform code review with Claude
+        uses: actions/github-script@v7
+        env:
+          ANTHROPIC_API_KEY: ${{ vars.CODE_REVIEW_ANTHROPIC_API_KEY || secrets.CODE_REVIEW_ANTHROPIC_API_KEY }}
+        with:
+          script: |
+            const fs = require('fs');
+            const https = require('https');
+
+            // Read files
+            const changedFiles = `${{ steps.changed-files.outputs.changed_files }}`;
+            let fileContents = '';
+            try {
+              fileContents = fs.readFileSync('/tmp/review-files/all-changes.txt', 'utf8');
+            } catch (e) {
+              console.log('No file contents found');
+            }
+
+            let guidelines = '';
+            try {
+              guidelines = fs.readFileSync('/tmp/guidelines.md', 'utf8');
+            } catch (e) {
+              console.log('No guidelines found');
+            }
+
+            // Build the review prompt
+            const prompt = `You are an expert code reviewer. Please review the following pull request changes.
+
+            ## Changed Files
+            ${changedFiles}
+
+            ## File Contents
+            ${fileContents.substring(0, 50000)} ${fileContents.length > 50000 ? '... (truncated)' : ''}
+
+            ## Review Instructions
+
+            ### Primary Review (Your Expertise)
+
+            Conduct a thorough code review checking for:
+
+            1. **Security vulnerabilities**: SQL injection, XSS, authentication issues, exposed secrets, insecure dependencies
+            2. **Bugs and logic errors**: Edge cases, null/undefined handling, off-by-one errors, race conditions
+            3. **Performance issues**: N+1 queries, unnecessary loops, memory leaks, inefficient algorithms
+            4. **Type safety**: TypeScript errors, type assertions, any types, missing null checks
+            5. **Code quality**: Complexity, readability, maintainability, error handling
+            6. **Best practices**: React hooks usage, async/await patterns, promise handling, resource cleanup
+            7. **Testing**: Missing test coverage, untested edge cases
+
+            ### Secondary Review (Project-Specific Guidelines)
+
+            ${guidelines ? 'Additionally, check against these project-specific architectural guidelines:\n\n' + guidelines.substring(0, 100000) : 'No custom guidelines configured.'}
+
+            ## Output Format
+
+            Provide your review in markdown format with two sections:
+
+            ### Critical Issues (Must Fix Before Merge)
+
+            List any security vulnerabilities, bugs, architecture violations, or performance problems.
+            For each issue:
+            - Reference guideline ID if applicable (e.g., [GP-7], [BE-2])
+            - File and line numbers
+            - Clear explanation
+            - Code example showing the fix
+
+            ### Suggestions (Improvements)
+
+            List code quality improvements, better naming, refactoring opportunities.
+
+            If there are no issues, respond with "No critical issues found. Code looks good!"
+
+            **Important**: Use your full expertise. Don't limit review to just the custom guidelines.`;
+
+            // Call Anthropic API
+            const apiKey = process.env.ANTHROPIC_API_KEY;
+
+            if (!apiKey) {
+              console.log('ANTHROPIC_API_KEY not configured - skipping automated review');
+              console.log('To enable automated reviews, add CODE_REVIEW_ANTHROPIC_API_KEY to repository secrets or variables');
+              return;
+            }
+
+            const requestData = JSON.stringify({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 4096,
+              messages: [{
+                role: 'user',
+                content: prompt
+              }]
+            });
+
+            const options = {
+              hostname: 'api.anthropic.com',
+              path: '/v1/messages',
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'Content-Length': Buffer.byteLength(requestData)
+              }
+            };
+
+            const makeRequest = () => {
+              return new Promise((resolve, reject) => {
+                const req = https.request(options, (res) => {
+                  let data = '';
+
+                  res.on('data', (chunk) => {
+                    data += chunk;
+                  });
+
+                  res.on('end', () => {
+                    if (res.statusCode === 200) {
+                      resolve(JSON.parse(data));
+                    } else {
+                      reject(new Error(`API request failed with status ${res.statusCode}: ${data}`));
+                    }
+                  });
+                });
+
+                req.on('error', reject);
+                req.write(requestData);
+                req.end();
+              });
+            };
+
+            try {
+              console.log('Calling Anthropic API for code review...');
+              const response = await makeRequest();
+              const reviewText = response.content[0].text;
+
+              // Post review as comment
+              const commentBody = `## Automated Code Review
+
+${reviewText}
+
+---
+<sub>Powered by Claude AI | [Configure Guidelines](.github/code-review-guidelines/)</sub>`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody
+              });
+
+              console.log('Review posted successfully!');
+
+            } catch (error) {
+              console.error('Error during review:', error.message);
+              core.setFailed(`Code review failed: ${error.message}`);
+            }
 
   test:
     if: github.event.pull_request.draft == false
