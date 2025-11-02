@@ -67,192 +67,47 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      issues: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Get changed files
-        id: changed-files
-        run: |
-          git fetch origin ${{ github.base_ref }}
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.(ts|tsx|js|jsx)$' || echo "")
-          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "Changed files:"
-          echo "$CHANGED_FILES"
-
-      - name: Get file contents and perform review
+      - name: Request Claude Code review
         uses: actions/github-script@v7
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          CHANGED_FILES: ${{ steps.changed-files.outputs.changed_files }}
         with:
           script: |
-            const fs = require('fs');
-            const https = require('https');
+            const eventAction = context.payload.action;
+            console.log('PR event action:', eventAction);
 
-            const changedFiles = process.env.CHANGED_FILES.trim();
-            if (!changedFiles) {
-              console.log('No source files changed, skipping review');
-              return;
-            }
-
-            // Read CLAUDE.md guidelines
-            let guidelines = '';
-            try {
-              guidelines = fs.readFileSync('CLAUDE.md', 'utf8');
-            } catch (e) {
-              console.log('CLAUDE.md not found, using default guidelines');
-            }
-
-            // Build file contents
-            let fileContents = '';
-            const files = changedFiles.split('\n').filter(f => f);
-            for (const file of files) {
-              if (fs.existsSync(file)) {
-                const content = fs.readFileSync(file, 'utf8');
-                fileContents = fileContents + '=== FILE: ' + file + ' ===\n' + content + '\n\n';
-              }
-            }
-
-            // Check API key
-            const apiKey = process.env.ANTHROPIC_API_KEY;
-            if (!apiKey) {
-              core.setFailed('ANTHROPIC_API_KEY not configured');
-              return;
-            }
-
-            // Build prompt
-            const systemPrompt = 'You are an expert code reviewer.\n\n' + guidelines + '\n\n' +
-              'Review the following PR changes. For each issue found, output in this EXACT format:\n\n' +
-              '```\n' +
-              'FILE: path/to/file.ts\n' +
-              'LINE: 42\n' +
-              'SEVERITY: CRITICAL\n' +
-              'ISSUE: [GP-2] Generic naming\n' +
-              'PROBLEM: Function name "proc" is not descriptive\n' +
-              'FIX: Rename to processUserData\n' +
-              '```\n\n' +
-              'Output each issue in this format. Be concise.';
-
-            const userPrompt = '## Changed Files\n' + changedFiles + '\n\n## File Contents\n' + fileContents.substring(0, 50000);
-
-            // Call Claude API
-            const requestData = JSON.stringify({
-              model: 'claude-sonnet-4-20250514',
-              max_tokens: 4096,
-              system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
-              messages: [{ role: 'user', content: userPrompt }]
+            // Get all comments
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
             });
 
-            const makeRequest = () => {
-              return new Promise((resolve, reject) => {
-                const req = https.request({
-                  hostname: 'api.anthropic.com',
-                  path: '/v1/messages',
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01',
-                    'Content-Length': Buffer.byteLength(requestData)
-                  }
-                }, (res) => {
-                  let data = '';
-                  res.on('data', (chunk) => { data = data + chunk; });
-                  res.on('end', () => {
-                    if (res.statusCode === 200) {
-                      resolve(JSON.parse(data));
-                    } else {
-                      reject(new Error('API request failed with status ' + res.statusCode + ': ' + data));
-                    }
-                  });
-                });
-                req.on('error', reject);
-                req.write(requestData);
-                req.end();
+            // Find and delete previous auto-generated review comments
+            // This keeps it to 1 comment instead of spamming on every commit
+            const autoReviewComments = comments.data.filter(comment =>
+              comment.user.type === 'Bot' &&
+              comment.user.login === 'github-actions[bot]' &&
+              comment.body.includes('@claude review')
+            );
+
+            for (const comment of autoReviewComments) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: comment.id,
               });
-            };
-
-            try {
-              console.log('Calling Claude API for code review...');
-              const response = await makeRequest();
-              const reviewText = response.content[0].text;
-              console.log('Review response:', reviewText);
-
-              // Parse issues and create inline comments
-              const issuePattern = /FILE:\s*(.+?)\nLINE:\s*(\d+)\nSEVERITY:\s*(CRITICAL|SUGGESTION)\nISSUE:\s*(.+?)\nPROBLEM:\s*(.+?)(?:\nFIX:\s*(.+?))?(?=\n\nFILE:|$)/gs;
-              const issues = [];
-              let match;
-              let hasCritical = false;
-
-              while ((match = issuePattern.exec(reviewText)) !== null) {
-                const issue = {
-                  file: match[1].trim(),
-                  line: parseInt(match[2]),
-                  severity: match[3].trim(),
-                  issueId: match[4].trim(),
-                  problem: match[5].trim(),
-                  fix: match[6] ? match[6].trim() : ''
-                };
-                issues.push(issue);
-                if (issue.severity === 'CRITICAL') {
-                  hasCritical = true;
-                }
-              }
-
-              console.log('Found ' + issues.length + ' issues (' + issues.filter(i => i.severity === 'CRITICAL').length + ' critical)');
-
-              // Post inline review comments
-              if (issues.length > 0) {
-                const comments = issues.map(issue => {
-                  const body = '**' + issue.issueId + '** (' + issue.severity + ')\n\n' +
-                    issue.problem +
-                    (issue.fix ? '\n\n**Fix:**\n' + issue.fix : '');
-
-                  return {
-                    path: issue.file,
-                    line: issue.line,
-                    body: body
-                  };
-                });
-
-                await github.rest.pulls.createReview({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: context.issue.number,
-                  event: hasCritical ? 'REQUEST_CHANGES' : 'COMMENT',
-                  body: '## 🤖 Automated Code Review\n\n' +
-                    'Found ' + issues.length + ' issue(s): ' +
-                    issues.filter(i => i.severity === 'CRITICAL').length + ' critical, ' +
-                    issues.filter(i => i.severity === 'SUGGESTION').length + ' suggestions.\n\n' +
-                    'Review inline comments for details.',
-                  comments: comments
-                });
-
-                console.log('Posted review with ' + comments.length + ' inline comments');
-              } else {
-                await github.rest.pulls.createReview({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: context.issue.number,
-                  event: 'APPROVE',
-                  body: '## 🤖 Automated Code Review\n\nNo issues found. Code looks good!'
-                });
-              }
-
-              // Fail job if critical issues found
-              if (hasCritical) {
-                core.setFailed('Code review found ' + issues.filter(i => i.severity === 'CRITICAL').length + ' critical issue(s) that must be fixed before merge.');
-              }
-
-            } catch (error) {
-              console.error('Error during review:', error.message);
-              core.setFailed('Code review failed: ' + error.message);
+              console.log('Deleted previous auto-review comment:', comment.id);
             }
+
+            // Post new review request
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '@claude review this PR according to the guidelines in CLAUDE.md'
+            });
+            console.log('Posted new @claude review request');
 
   test:
     if: github.event.pull_request.draft == false
