@@ -1,4 +1,4 @@
-name: clean_on_delete
+name: Cleanup on Branch Delete
 
 on: delete
 

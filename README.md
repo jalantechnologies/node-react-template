@@ -22,6 +22,33 @@ This project has three deployment environments that everyone can access:
   - Useful for ongoing testing of the integrated codebase.
   - URL: [https://preview.node-react-template.platform.bettrhq.com](https://preview.node-react-template.platform.bettrhq.com)
 
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment. When you open or update a pull request, two independent tracks run in parallel:
+
+### Quality Checks Track (Advisory)
+Provides code quality feedback without blocking deployments:
+
+1. **Lint** (~30s) - ESLint checks for code style and potential errors
+2. **SonarQube Analysis** (~60s) - Code quality metrics, complexity, and code smells
+3. **Code Review** (~90s) - Automated code review (runs only after lint and SonarQube pass)
+
+### Build & Test Track
+Validates functionality and deploys preview environments:
+
+1. **Build Docker Image** (~2-3 min) - Creates containerized application
+2. **Integration Tests** (~1 min) - Runs `compose:test` with MongoDB
+3. **E2E Tests** (~2 min) - Runs `compose:e2e` for end-to-end validation
+4. **Deploy Preview** (~1 min) - Deploys to `{pr-name}.preview.platform.bettrhq.com`
+
+### Deployment Workflows
+
+- **Preview Environment (PR)** - Automatic preview deployment for each PR
+- **Production Deployment** - Deploys to production when code is merged to `main`
+- **Permanent Preview Deployment** - Updates permanent preview when `main` changes
+
+**Note:** Code merged to `main` must go through pull requests with passing quality checks. Production and permanent preview deployments skip redundant checks since they've already been validated at the PR level.
+
 ## Documentation Directory
 
 - [Getting Started](docs/getting-started.md)

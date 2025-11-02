@@ -1,4 +1,4 @@
-name: clean_on_dispatch
+name: Manual Cleanup
 
 on: workflow_dispatch
 
