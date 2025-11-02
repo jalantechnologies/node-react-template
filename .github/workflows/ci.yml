@@ -63,12 +63,15 @@ jobs:
 
   review:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    steps:
-      - name: Placeholder for code review
-        run: |
-          echo "Code review placeholder"
-          echo "Future implementation: AI-powered review for architecture, security, and best practices"
+    uses: jalantechnologies/node-react-template-review-agent/.github/workflows/review.yml@main
+    with:
+      pr_number: ${{ github.event.number }}
+      repo_owner: ${{ github.repository_owner }}
+      repo_name: ${{ github.event.repository.name }}
+      base_ref: ${{ github.base_ref }}
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.CODE_REVIEW_ANTHROPIC_API_KEY || vars.CODE_REVIEW_ANTHROPIC_API_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     if: github.event.pull_request.draft == false
