@@ -1,0 +1,68 @@
+# Getting Started
+
+## Prerequisites
+
+| Dependency  | Version   | Notes                                                        |
+|-------------|-----------|--------------------------------------------------------------|
+| **Node**    | 22.13.1   | [Download](https://nodejs.org/download/release/v22.13.1/)    |
+| **MongoDB** | 4.4.24    | [Download](https://fastdl.mongodb.org/osx/mongodb-macos-x86_64-4.4.24.tgz) |
+
+## Quickstart
+
+This project can run either in **Docker** or **locally with Node**. Choose whichever fits your workflow.
+
+---
+
+# Running the App
+
+### 1. With Docker Compose
+
+```bash
+# Build (optional) and start everything
+docker compose -f docker-compose.dev.yml up --build
+```
+
+* The full stack (frontend, backend, MongoDB) starts in hot-reload mode.
+* Once the containers are healthy, your browser should open automatically at **http://localhost:3000**.
+  If it doesn't, visit the URL manually.
+
+### 2. Locally (npm run serve)
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev servers (frontend + backend)
+npm run serve
+
+# └─ Disable auto-opening browser by setting WEBPACK_DEV_DISABLE_OPEN=true
+```
+
+* **Frontend:** http://localhost:3000
+* **Backend:**  http://localhost:8080
+* **MongoDB:**  `mongodb://localhost:27017`
+* Disable the auto-opening browser tab by exporting `WEBPACK_DEV_DISABLE_OPEN=true`.
+
+---
+
+# Scripts
+
+| Script          | Purpose                                           |
+|-----------------|---------------------------------------------------|
+| `npm install`   | Install JavaScript/TypeScript dependencies.       |
+| `npm run build` | Production build (no hot reload).                 |
+| `npm start`     | Start the built app.                              |
+| `npm run serve` | Dev mode with hot reload.                         |
+| `npm run lint`  | Lint JavaScript and TypeScript code.              |
+| `npm run lint:md` | Lint Markdown files.                            |
+| `npm run e2e`   | Run E2E tests.                                    |
+| `npm run cy:open` | Open Cypress test runner.                       |
+| `npm run fmt`   | Auto-format code using Prettier.                  |
+
+---
+
+# Bonus Tips
+
+* **Hot Reload:** Both frontend and backend restart automatically on code changes.
+* **Mongo CLI access:** connect with `mongodb://localhost:27017`.
+* **MongoDB Client:** Use any MongoDB client to connect to the database for inspection and debugging.
