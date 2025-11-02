@@ -8,32 +8,37 @@ This project uses **GitHub Actions** for continuous integration and deployment o
 
 When you open or update a pull request, two independent tracks run in parallel:
 
-```
-PR Opened/Updated
-    │
-    ├─────────────────────────────────┬─────────────────────────────────┐
-    │                                 │                                 │
-    │  Quality Checks Track           │  Build & Test Track             │
-    │  (Advisory)                     │  (Functional Validation)        │
-    │                                 │                                 │
-    ├─── Lint (~30s)                  └─── Build Docker (~2-3min)      │
-    │                                           │                       │
-    ├─── SonarQube (~60s)                      ├─── Integration Tests (~1min)
-    │                                           │                       │
-    │                                           └─── Deploy Preview (~1min)
-    │                                                                   │
-    └─── Code Review (~90s)                                            │
-         (runs only after                                              │
-          lint & SonarQube pass)                                       │
-                                                                        │
-                                                                        ▼
-                                                                     Complete
+```mermaid
+graph TB
+    Start([PR Opened/Updated])
+
+    Start --> QualityTrack[Quality Checks Track<br/>Advisory]
+    Start --> BuildTrack[Build & Test Track<br/>Functional Validation]
+
+    QualityTrack --> Lint[Lint<br/>~30s]
+    QualityTrack --> Sonar[SonarQube Analysis<br/>~60s]
+
+    Lint --> CodeReview[Code Review<br/>~90s]
+    Sonar --> CodeReview
+
+    BuildTrack --> Build[Build Docker Image<br/>~2-3 min]
+    Build --> Tests[Integration Tests<br/>~1 min]
+    Build --> Deploy[Deploy Preview<br/>~1 min]
+
+    CodeReview --> End([Complete])
+    Tests --> End
+    Deploy --> End
+
+    style QualityTrack fill:#e1f5ff
+    style BuildTrack fill:#fff4e1
+    style CodeReview fill:#d4edda
+    style Deploy fill:#d4edda
 ```
 
 ### Quality Checks Track (Advisory)
 Provides code quality feedback without blocking deployments:
 
-1. **Lint** (~30s) - ESLint checks for code style and potential errors
+1. **Lint** (~30s) - ESLint and Markdown checks for code style and potential errors
 2. **SonarQube Analysis** (~60s) - Code quality metrics, complexity, and code smells
 3. **Code Review** (~90s) - Automated code review (runs only after lint and SonarQube pass)
 
@@ -41,8 +46,9 @@ Provides code quality feedback without blocking deployments:
 Validates functionality and deploys preview environments:
 
 1. **Build Docker Image** (~2-3 min) - Creates containerized application
-2. **Integration Tests** (~1 min) - Runs `compose:test` with MongoDB
-3. **Deploy Preview** (~1 min) - Deploys to `{pr-name}.preview.platform.bettrhq.com`
+2. **Integration Tests & Deploy Preview** (parallel after build):
+   - **Integration Tests** (~1 min) - Runs `compose:test` with MongoDB
+   - **Deploy Preview** (~1 min) - Deploys to `{pr-name}.preview.platform.bettrhq.com`
 
 **Note:** Code merged to `main` must go through pull requests with passing quality checks. Production and permanent preview deployments skip redundant checks since they've already been validated at the PR level.
 
