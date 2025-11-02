@@ -32,6 +32,7 @@ This project has three deployment environments that everyone can access:
 - [Testing](docs/testing.md)
 - [CI/CD](docs/deployment.md)
 - [Running Scripts in Production](docs/running-scripts-in-production.md)
+- [Automated Code Review](docs/automated-code-review.md)
 
 ## Best Practices
 
