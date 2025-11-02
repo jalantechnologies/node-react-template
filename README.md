@@ -38,8 +38,7 @@ Validates functionality and deploys preview environments:
 
 1. **Build Docker Image** (~2-3 min) - Creates containerized application
 2. **Integration Tests** (~1 min) - Runs `compose:test` with MongoDB
-3. **E2E Tests** (~2 min) - Runs `compose:e2e` for end-to-end validation
-4. **Deploy Preview** (~1 min) - Deploys to `{pr-name}.preview.platform.bettrhq.com`
+3. **Deploy Preview** (~1 min) - Deploys to `{pr-name}.preview.platform.bettrhq.com`
 
 ### Deployment Workflows
 

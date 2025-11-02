@@ -55,8 +55,6 @@ npm run serve
 | `npm run serve` | Dev mode with hot reload.                         |
 | `npm run lint`  | Lint JavaScript and TypeScript code.              |
 | `npm run lint:md` | Lint Markdown files.                            |
-| `npm run e2e`   | Run E2E tests.                                    |
-| `npm run cy:open` | Open Cypress test runner.                       |
 | `npm run fmt`   | Auto-format code using Prettier.                  |
 
 ---
