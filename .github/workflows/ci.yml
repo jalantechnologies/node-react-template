@@ -70,7 +70,7 @@ jobs:
       repo_name: ${{ github.event.repository.name }}
       base_ref: ${{ github.base_ref }}
     secrets:
-      ANTHROPIC_API_KEY: ${{ secrets.CODE_REVIEW_ANTHROPIC_API_KEY || vars.CODE_REVIEW_ANTHROPIC_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.CODE_REVIEW_ANTHROPIC_API_KEY }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test:
