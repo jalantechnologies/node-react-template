@@ -85,7 +85,5 @@ This ensures every PR can be tested independently before merging.
 
 ### Cleanup Workflows
 - **cleanup_pr** - Automatically removes preview environment when PR is closed
-- **cleanup_branch** - Automatically removes preview environment when branch is deleted
-- **cleanup_manual** - Allows manual cleanup of preview environments via workflow dispatch
 
-All credentials and secrets are securely managed via GitHub secrets and environment variables. Deployments use github-ci actions for Docker image building and Kubernetes deployment to DigitalOcean.
+All credentials and secrets are securely managed via GitHub secrets and environment variables. Deployments use github-ci actions for Docker image building and Kubernetes deployment.
