@@ -1,4 +1,4 @@
-name: cd_permanent_preview
+name: cd_production
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     concurrency:
-      group: cd-permanent-preview
+      group: cd-production
       cancel-in-progress: true
     steps:
       - name: Checkout app
@@ -29,23 +29,23 @@ jobs:
         uses: ./platform/.github/actions/build
         with:
           app_name: node-react-template
-          tag: preview
+          tag: production
           context: app/.
           docker_registry: ${{ vars.DOCKER_REGISTRY }}
           docker_username: ${{ vars.DOCKER_USERNAME }}
           docker_password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Deploy to permanent preview
+      - name: Deploy to production
         uses: ./platform/.github/actions/deploy
         with:
           hosting_provider: ${{ vars.HOSTING_PROVIDER }}
           app_name: node-react-template
-          app_env: preview
-          app_hostname: preview.node-react-template.platform.bettrhq.com
+          app_env: production
+          app_hostname: node-react-template.platform.bettrhq.com
           branch: main
           deploy_id: ${{ github.run_number }}
           deploy_root: app/lib/kube
-          deploy_labels: gh/env=preview
+          deploy_labels: gh/env=production
           deploy_image: ${{ steps.build.outputs.image_ref }}
           docker_registry: ${{ vars.DOCKER_REGISTRY }}
           docker_username: ${{ vars.DOCKER_USERNAME }}
@@ -56,4 +56,4 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           do_access_token: ${{ secrets.DO_ACCESS_TOKEN }}
           do_cluster_id: ${{ vars.DO_CLUSTER_ID }}
-          doppler_token: ${{ secrets.DOPPLER_PREVIEW_TOKEN }}
+          doppler_token: ${{ secrets.DOPPLER_PRODUCTION_TOKEN }}

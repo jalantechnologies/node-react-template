@@ -2,11 +2,10 @@
   "root": true,
   "env": {
     "browser": true,
-    "cypress/globals": true,
     "es6": true,
     "node": true
   },
-  "plugins": ["cypress", "tailwindcss"],
+  "plugins": ["tailwindcss"],
   "overrides": [
     {
       "files": [".js"],
@@ -54,7 +53,6 @@
         "airbnb-typescript/base",
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
-        "plugin:cypress/recommended",
         "plugin:react-hooks/recommended",
         "plugin:tailwindcss/recommended",
         "prettier"
@@ -124,20 +122,6 @@
       "files": "test/**",
       "rules": {
         "@typescript-eslint/no-unused-expressions": "off"
-      }
-    },
-    {
-      "files": "cypress/**",
-      "parserOptions": {
-        "project": "./cypress/tsconfig.json"
-      },
-      "rules": {
-        "cypress/assertion-before-screenshot": "warn",
-        "cypress/no-assigning-return-values": "error",
-        "cypress/no-async-tests": "error",
-        "cypress/no-force": "warn",
-        "cypress/no-pause": "error",
-        "cypress/no-unnecessary-waiting": "error"
       }
     }
   ]
