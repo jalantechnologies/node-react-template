@@ -1,27 +1,30 @@
-name: permanent_preview
+name: preview
 
 on:
-  push:
-    branches:
-      - main
+  pull_request:
+    types: [ opened, synchronize, reopened ]
 
 jobs:
   ci:
+    # only run when updating an 'Open' PR
+    if: github.event.pull_request.state == 'open'
     uses: jalantechnologies/github-ci/.github/workflows/ci.yml@v2.5
     concurrency:
-      group: ci-permanent-preview
+      group: ci-preview-${{ github.event.pull_request.head.ref }}
       cancel-in-progress: true
     with:
       app_name: node-react-template
       app_env: preview
-      app_hostname: preview.node-react-template.platform.bettrhq.com
-      branch: main
+      app_hostname: '{1}.preview.platform.bettrhq.com'
+      branch: ${{ github.event.pull_request.head.ref }}
+      build_args: |
+        NODE_CONFIG_ENV=preview
+      checks: "['compose:test']"
       docker_registry: ${{ vars.DOCKER_REGISTRY }}
       docker_username: ${{ vars.DOCKER_USERNAME }}
-      sonar_host_url: ${{ vars.SONAR_HOST_URL }}
+      pull_request_number: ${{ github.event.number }}
       do_cluster_id: ${{ vars.DO_CLUSTER_ID }}
     secrets:
       docker_password: ${{ secrets.DOCKER_PASSWORD }}
       doppler_token: ${{ secrets.DOPPLER_PREVIEW_TOKEN }}
       do_access_token: ${{ secrets.DO_ACCESS_TOKEN }}
-      sonar_token: ${{ secrets.SONAR_TOKEN }}

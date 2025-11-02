@@ -1,19 +1,19 @@
-name: clean_on_pr_closed
+name: cleanup_branch
 
-on:
-  pull_request_target:
-    types: [closed]
+on: delete
 
 jobs:
   clean:
+    # only run when deleting a branch
+    if: github.event.ref_type == 'branch'
     uses: jalantechnologies/github-ci/.github/workflows/clean.yml@v2.5
     concurrency:
-      group: ci-preview-${{ github.event.pull_request.head.ref }}
+      group: ci-preview-${{ github.event.ref }}
       cancel-in-progress: true
     with:
       app_name: node-react-template
       app_env: preview
-      branch: ${{ github.event.pull_request.head.ref }}
+      branch: ${{ github.event.ref }}
       docker_registry: ${{ vars.DOCKER_REGISTRY }}
       docker_username: ${{ vars.DOCKER_USERNAME }}
       do_cluster_id: ${{ vars.DO_CLUSTER_ID }}

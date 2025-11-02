@@ -1,4 +1,4 @@
-name: production_on_push
+name: production
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  production:
+  ci:
     uses: jalantechnologies/github-ci/.github/workflows/ci.yml@v2.5
     concurrency:
       group: ci-production-${{ github.event.ref }}

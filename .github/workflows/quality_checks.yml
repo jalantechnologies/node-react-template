@@ -39,7 +39,7 @@ jobs:
       - name: Get workflow version
         id: ci_workflow
         run: |
-          workflow_yaml=$(cat .github/workflows/preview_on_pr_update.yml)
+          workflow_yaml=$(cat .github/workflows/preview.yml)
           uses_data=$(echo "$workflow_yaml" | grep 'uses:')
           tag=$(echo $uses_data | sed -n 's/.*@\(.*\)/\1/p')
           echo "version=$(echo $tag)" >> $GITHUB_OUTPUT
