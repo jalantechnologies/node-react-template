@@ -127,16 +127,14 @@ jobs:
 
             // Build prompt
             const systemPrompt = 'You are an expert code reviewer.\n\n' + guidelines + '\n\n' +
-              'Review the following PR changes. For each issue found, output in this EXACT format:\n\n' +
-              '```\n' +
+              'Review the following PR changes. For each issue found, output in this EXACT format (no code fencing, no markdown formatting):\n\n' +
               'FILE: path/to/file.ts\n' +
               'LINE: 42\n' +
               'SEVERITY: CRITICAL\n' +
               'ISSUE: [GP-2] Generic naming\n' +
               'PROBLEM: Function name "proc" is not descriptive\n' +
-              'FIX: Rename to processUserData\n' +
-              '```\n\n' +
-              'Output each issue in this format. Be concise.';
+              'FIX: Rename to processUserData\n\n' +
+              'Separate each issue with a blank line. Output ONLY in this plain text format - no backticks, no code blocks, no extra formatting.';
 
             const userPrompt = '## Changed Files\n' + changedFiles + '\n\n## File Contents\n' + fileContents.substring(0, 50000);
 
