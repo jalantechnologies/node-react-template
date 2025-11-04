@@ -2,7 +2,7 @@ name: cd
 
 on:
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    types: [ opened, synchronize, reopened, ready_for_review ]
 
 jobs:
   deploy:
@@ -22,7 +22,7 @@ jobs:
         with:
           repository: jalantechnologies/github-ci
           path: platform
-          ref: v3.2.5
+          ref: v3.2.6
 
       - name: Extract branch name
         id: extract_branch
@@ -65,3 +65,5 @@ jobs:
           do_access_token: ${{ secrets.DO_ACCESS_TOKEN }}
           do_cluster_id: ${{ vars.DO_CLUSTER_ID }}
           doppler_token: ${{ secrets.DOPPLER_PREVIEW_TOKEN }}
+          pull_request_number: ${{  github.event.pull_request.number }}
+          deploy_annotate_pr: "true"
