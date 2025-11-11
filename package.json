@@ -12,7 +12,8 @@
     "build:backend": "tsc -p src/apps/backend/tsconfig.json --outDir dist",
     "build:frontend": "webpack --output-path dist/public --config src/apps/frontend/webpack.prod.js",
     "fmt": "prettier --write \"**/*.{js,ts,tsx}\" --ignore-path .prettierignore",
-    "test": "cross-env NODE_ENV=production NODE_CONFIG_ENV=testing mocha --exit -r ts-node/register --project tsconfig.mocha.json test/**/*.spec.ts",
+    "test": "cross-env NODE_EN
+    V=production NODE_CONFIG_ENV=testing mocha --exit -r ts-node/register --project tsconfig.mocha.json test/**/*.spec.ts",
     "test:watch": "cross-env NODE_ENV=production NODE_CONFIG_ENV=testing mocha --watch --exit -r ts-node/register --project tsconfig.mocha.json --watch-files test/**/*.spec.ts test/**/*.spec.ts",
     "lint": "eslint .",
     "lint:md": "remark .",
@@ -132,3 +133,4 @@
     "webpack-merge": "^5.8.0"
   }
 }
+
