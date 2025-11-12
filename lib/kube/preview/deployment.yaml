@@ -81,9 +81,7 @@ spec:
               value: $KUBE_INGRESS_HOSTNAME
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
-          envFrom:
-            - secretRef:
-                name: $DOPPLER_MANAGED_SECRET_NAME
+
           # Mount writable directories since root filesystem is read-only
           volumeMounts:
             - name: tmp
@@ -116,4 +114,11 @@ spec:
           emptyDir: {}            # Temporary storage for log files
         - name: system-tmp
           emptyDir: {}            # Temporary storage for system files
+          volumeMounts:
+          - name: secret-ref
+            mountPath: /etc/config
+        - name: secret-ref
+          secret:
+            secretRef: $DOPPLER_MANAGED_SECRET_NAME
+        
 
