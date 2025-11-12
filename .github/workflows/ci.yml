@@ -191,7 +191,7 @@ jobs:
         uses: bridgecrewio/checkov-action@v12
         continue-on-error: true
         with:
-          directory: iac_changed_files
+          directory: lib/kube
           output_format: 'github_failed_only'
           output_file_path: checkov_result
           quiet: 'true'
