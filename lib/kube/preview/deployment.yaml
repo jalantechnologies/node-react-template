@@ -81,8 +81,6 @@ spec:
               value: $KUBE_INGRESS_HOSTNAME
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
-
-          # Mount writable directories since root filesystem is read-only
           volumeMounts:
             - name: tmp
               mountPath: /opt/app/tmp        # App temporary files
