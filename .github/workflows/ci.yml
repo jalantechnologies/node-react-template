@@ -159,7 +159,7 @@ jobs:
           export KUBE_ENV="${KUBE_ENV:-production}"
           export KUBE_INGRESS_HOSTNAME="${KUBE_INGRESS_HOSTNAME:-localhost}"
           
-          for file in lib/kube/{preview,production,shared}/*.yaml; do
+          for file in lib/kube/{preview,production,shared}/; do
             if [ -f "$file" ]; then
               tmpfile=$(mktemp)
               envsubst < "$file" > "$tmpfile" && mv "$tmpfile" "$file"
