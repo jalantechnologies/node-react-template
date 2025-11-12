@@ -158,11 +158,12 @@ jobs:
           export KUBE_DEPLOYMENT_IMAGE=flask-react-app:latest@123
           export KUBE_APP=flask-react-app
           export KUBE_INGRESS_HOSTNAME=test.com
-          
+          pip install checkov
           for file in lib/kube/{preview,production,shared}/*.yaml; do
             tmpfile=$(mktemp)
             envsubst < "$file" > "$tmpfile" && mv "$tmpfile" "$file"
           done
+          checkov -d lib/kube/ --output github_failed_only
 
       - name: Run Trivy scan on IaC
         if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' }}
