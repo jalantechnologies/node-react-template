@@ -64,6 +64,9 @@ spec:
           # envFrom:
           #   - secretRef:
           #       name: $DOPPLER_MANAGED_SECRET_NAME
+          volumeMounts:
+          - name: secret-ref
+            mountPath: /etc/config
           startupProbe:
             httpGet:
               path: /
@@ -80,9 +83,6 @@ spec:
               path: /
               port: 8080
             initialDelaySeconds: 30
-          volumeMounts:
-          - name: secret-ref
-            mountPath: /etc/config
       volumes: 
         - name: secret-ref
           secret:
