@@ -163,8 +163,12 @@ jobs:
           export KUBE_DEPLOY_ID=123
           export KUBE_ENV=preview
           export KUBE_NS=default
-          envsubst < iac_changed_files/lib/kube/preview/deployment.yaml >> iac_changed_files/lib/kube/preview/deployment.yaml
-          envsubst < iac_changed_files/lib/kube/production/deployment.yaml >> iac_changed_files/lib/kube/production/deployment.yaml
+          # envsubst < iac_changed_files/lib/kube/preview/deployment.yaml >> iac_changed_files/lib/kube/preview/deployment.yaml
+          # envsubst < iac_changed_files/lib/kube/production/deployment.yaml >> iac_changed_files/lib/kube/production/deployment.yaml
+          for file in iac_changed_files/lib/kube/{preview,production,shared}/*.yaml; do
+            tmpfile=$(mktemp)
+            envsubst < "$file" >> "$tmpfile" && mv "$tmpfile" "$file"
+          done
 
 
       - name: Run Trivy scan on IaC
