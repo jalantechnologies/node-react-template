@@ -163,9 +163,13 @@ jobs:
           for file in iac_changed_files/lib/kube/{preview,production,shared}/*.yaml; do
             tmpfile=$(mktemp)
             envsubst < "$file" > "$tmpfile" && mv "$tmpfile" "$file"
+            echo "$file"
             cat "$file"
             echo "done"
           done
+
+
+          ls iac_changed_files/
       
       - name: Run Trivy scan on IaC
         if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' }}
