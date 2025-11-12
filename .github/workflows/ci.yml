@@ -153,6 +153,7 @@ jobs:
             tmpfile=$(mktemp)
             envsubst < "$file" > "$tmpfile" && mv "$tmpfile" "$file"
             cat "$file"
+            echo "done"
           done
       
       - name: Run Trivy scan on IaC
