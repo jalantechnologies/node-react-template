@@ -1,0 +1,83 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: flask-react-app-production-b28b7af69320201--priority
+  namespace: flask-react-app-production
+value: 
+globalDefault: false
+description: "This priority class is used for preview pods."
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-react-app-production-b28b7af69320201-deployment
+  namespace: flask-react-app-production
+  labels:
+    app: flask-react-app-production-b28b7af69320201
+    version: 96804de911ad8ed12b4a432f0172a28294e05f6a
+  annotations:
+    secrets.doppler.com/reload: 'true'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-react-app-production-b28b7af69320201
+  template:
+    metadata:
+      labels:
+        app: flask-react-app-production-b28b7af69320201
+    spec:
+      priorityClassName: flask-react-app-production-b28b7af69320201--priority
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: doks.digitalocean.com/node-pool
+                    operator: In
+                    values:
+                      - platform-cluster-01-staging-pool
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: flask-react-app-production-b28b7af69320201
+          image: registry.hub.docker.com/jalantechnologies/flask-react-app@sha256:a6d990d128fe0462abb54fbb1c4a3789e24123b7ebd186583330f58595da6689
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 250m
+              memory: '256Mi'
+            limits:
+              cpu: 500m
+              memory: '512Mi'
+          ports:
+            - containerPort: 8080
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: NODE_CONFIG_ENV
+              value: 
+            - name: WEB_APP_HOST
+              value: flask-react-template.platform.bettrhq.com
+            - name: PAPERTRAIL_PROGRAM
+              value: flask-react-app-production-b28b7af69320201
+          envFrom:
+            - secretRef:
+                name: doppler-flask-react-app-production-managed-secret
+          startupProbe:
+            httpGet:
+              path: /
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+
