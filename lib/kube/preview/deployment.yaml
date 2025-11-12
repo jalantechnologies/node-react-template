@@ -90,6 +90,8 @@ spec:
               mountPath: /opt/app/logs       # App log files
             - name: system-tmp
               mountPath: /tmp                # System temporary files
+            - name: secret-ref
+              mountPath: /etc/config
           startupProbe:
             httpGet:
               path: /
