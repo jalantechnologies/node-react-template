@@ -148,16 +148,7 @@ jobs:
 
       - name: Format Deployment Files
         run: |
-          export KUBE_DEPLOYMENT_IMAGE=flask-react-app:latest@123
-          export KUBE_APP=flask-react-app
-          export KUBE_INGRESS_HOSTNAME=test.com
-          export DOPPLER_MANAGED_SECRET_NAME=secret
-          export GITHUB_SHA=test_sha
-          export KUBE_DEPLOY_ID=123
-          export KUBE_ENV=preview
-          export KUBE_NS=default
-          # envsubst < iac_changed_files/lib/kube/preview/deployment.yaml >> iac_changed_files/lib/kube/preview/deployment.yaml
-          # envsubst < iac_changed_files/lib/kube/production/deployment.yaml >> iac_changed_files/lib/kube/production/deployment.yaml
+          export KUBE_DEPLOYMENT_IMAGE=flask-react-app:latest@sha:123
           for file in iac_changed_files/lib/kube/{preview,production,shared}/*.yaml; do
             tmpfile=$(mktemp)
             envsubst < "$file" >> "$tmpfile" && mv "$tmpfile" "$file"
