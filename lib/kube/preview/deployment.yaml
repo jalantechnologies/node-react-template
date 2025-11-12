@@ -30,7 +30,6 @@ spec:
         component: node-react-template-preview
     spec:
       priorityClassName: $KUBE_APP-$KUBE_DEPLOY_ID-priority
-      # Disable automatic mounting of service account token for security
       automountServiceAccountToken: false
       # Pod-level security context - applies to all containers
       securityContext:
@@ -53,7 +52,7 @@ spec:
         - name: regcred
       containers:
         - name: $KUBE_APP
-          image: $KUBE_DEPLOYMENT_IMAGE
+          image: $KUBE_DEPLOYMENT_IMAGE:$KUBE_DEPLOYMENT_TAG@$KUBE_DEPLOYMENT_DIGEST
           imagePullPolicy: Always
           # Container-level security context - additional restrictions
           securityContext:
@@ -65,13 +64,17 @@ spec:
                 - ALL
           resources:
             requests:
-              cpu: 250m
+              cpu: 20m
               memory: '256Mi'
             limits:
-              cpu: 500m
+              cpu: 20m
               memory: '512Mi'
           ports:
             - containerPort: 8080
+          command:
+            - /opt/app/scripts/export_doppler_env.sh
+            - npm
+            - start
           env:
             - name: NODE_ENV
               value: 'production'
@@ -81,8 +84,6 @@ spec:
               value: $KUBE_INGRESS_HOSTNAME
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
-
-          # Mount writable directories since root filesystem is read-only
           volumeMounts:
             - name: tmp
               mountPath: /opt/app/tmp        # App temporary files
@@ -90,6 +91,8 @@ spec:
               mountPath: /opt/app/logs       # App log files
             - name: system-tmp
               mountPath: /tmp                # System temporary files
+            - name: secret-ref
+              mountPath: /opt/app/secrets
           startupProbe:
             httpGet:
               path: /
@@ -114,11 +117,8 @@ spec:
           emptyDir: {}            # Temporary storage for log files
         - name: system-tmp
           emptyDir: {}            # Temporary storage for system files
-          volumeMounts:
-          - name: secret-ref
-            mountPath: /etc/config
         - name: secret-ref
           secret:
-            secretRef: $DOPPLER_MANAGED_SECRET_NAME
+            secretName: $DOPPLER_MANAGED_SECRET_NAME
         
 
