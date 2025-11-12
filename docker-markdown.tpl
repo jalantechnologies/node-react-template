@@ -34,3 +34,4 @@ Generated at: {{ now }}
 {{- if not $hasFindings }}
 ✅ No vulnerabilities or misconfigurations detected in the built image.
 {{- end }}
+
