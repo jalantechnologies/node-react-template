@@ -145,7 +145,15 @@ jobs:
           done
 
           echo "FILTERED_FILES=$FILTERED_FILES" >> $GITHUB_OUTPUT
-  
+
+      - name: Format Deployment Files
+        run: | 
+          export KUBE_DEPLOYMENT_IMAGE=flask-react-app:${{ steps.extract_branch.outputs.branch_hash }}@sha256:123
+          for file in iac_changed_files/lib/kube/{preview,production,shared}/*.yaml; do
+            tmpfile=$(mktemp)
+            envsubst <"$file" > "$tmpfile" && mv "$tmpfile" "$file"
+          done
+      
       - name: Run Trivy scan on IaC
         if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' }}
         id: trivy_iac
@@ -176,7 +184,7 @@ jobs:
         uses: bridgecrewio/checkov-action@v12
         continue-on-error: true
         with:
-          directory: iac_changed_files
+          directory: iac_changed_files/
           output_format: 'github_failed_only'
           output_file_path: checkov_result
           quiet: 'true'
