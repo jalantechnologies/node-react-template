@@ -61,79 +61,9 @@ spec:
               value: $KUBE_INGRESS_HOSTNAME
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
-            - name: DD_API_KEY
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: DD_API_KEY
-            - name: DD_APP_NAME
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: DD_APP_NAME
-            - name: DEFAULT_EMAIL
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: DEFAULT_EMAIL
-            - name: DEFAULT_OTP
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: DEFAULT_OTP
-            - name: DEFAULT_PHONE_NUMBER
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: DEFAULT_PHONE_NUMBER
-            - name: DEFAULT_EMAIL_NAME
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: DEFAULT_EMAIL_NAME
-            - name: DOPPLER_PROJECT
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: DOPPLER_PROJECT
-            - name: FORGOT_PASSWORD_MAIL_TEMPLATE_ID
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: DOPPLER_PROJECT
-            - name: FORGOT_PASSWORD_MAIL_TEMPLATE_ID
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: FORGOT_PASSWORD_MAIL_TEMPLATE_ID
-            - name: JWT_TOKEN
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: JWT_TOKEN
-            - name: MONGODB_URI
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: MONGODB_URI
-            - name: OPENAI_API_KEY
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: OPENAI_API_KEY
-            - name: PASSWORD_RESET_EMAIL_ENABLED
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: PASSWORD_RESET_EMAIL_ENABLED
-            - name: SENDGRID_API_KEY
-              valueFrom: 
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: SENDGRID_API_KEY
-          volumeMounts:
-          - name: secret-ref
-            mountPath: /etc/config
+          envFrom:
+            - secretRef:
+                name: $DOPPLER_MANAGED_SECRET_NAME
           startupProbe:
             httpGet:
               path: /
@@ -150,9 +80,4 @@ spec:
               path: /
               port: 8080
             initialDelaySeconds: 30
-      volumes: 
-        - name: secret-ref
-          secret:
-            secretRef: $DOPPLER_MANAGED_SECRET_NAME
-        
 
