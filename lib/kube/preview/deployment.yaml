@@ -80,4 +80,12 @@ spec:
               path: /
               port: 8080
             initialDelaySeconds: 30
+          volumeMounts:
+          - name: secret-ref
+            mountPath: /etc/config
+      volumes: 
+        - name: secret-ref
+          secret:
+            secretRef: $DOPPLER_MANAGED_SECRET_NAME
+        
 
