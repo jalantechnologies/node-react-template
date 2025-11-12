@@ -155,14 +155,14 @@ jobs:
 
       - name: Format Deployment Files
         run: |
-          export KUBE_DEPLOYMENT_IMAGE="${KUBE_DEPLOYMENT_IMAGE:-flask-react-app:default}"
-          export KUBE_ENV="${KUBE_ENV:-production}"
-          export KUBE_INGRESS_HOSTNAME="${KUBE_INGRESS_HOSTNAME:-localhost}"
+          export KUBE_DEPLOYMENT_IMAGE=flask-react-app:latest@123
+          export KUBE_APP=flask-react-app
+          export KUBE_INGRESS_HOSTNAME=test.com
           
           for file in lib/kube/{preview,production,shared}/*.yaml; do
             if [ -f "$file" ]; then
               tmpfile=$(mktemp)
-              envsubst < "$file" > "$tmpfile" && mv "$tmpfile" "$file"
+              envsubst < "$file" > "$file"
             else
               echo "File $file not found, skipping..."
             fi
