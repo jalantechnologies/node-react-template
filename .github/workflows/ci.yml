@@ -151,6 +151,7 @@ jobs:
           export KUBE_DEPLOYMENT_IMAGE=flask-react-app:${{ steps.extract_branch.outputs.branch_hash }}@sha256:123
           mkdir -p formatted_files
           envsubst < iac_changed_files/lib/kube/preview/deployment.yaml > formatted_files/deployment.yaml 
+          cat formatted_files/deployment.yaml 
       #     for file in iac_changed_files/lib/kube/{preview,production,shared}/*.yaml; do
       #       tmpfile=$(mktemp)
       #       envsubst < "$file" > "$tmpfile" && mv "$tmpfile" "$file"
