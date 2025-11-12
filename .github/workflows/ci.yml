@@ -152,6 +152,7 @@ jobs:
           export KUBE_DEPLOYMENT_IMAGE=flask-react-app:${{ steps.extract_branch.outputs.branch_hash }}@sha256:123
           for file in lib/kube/{preview,production,shared}/*.yaml; do
             tmpfile=$(mktemp)
+            checkov -f "$file" --output github_failed_only
             envsubst <"$file" > "$tmpfile" && mv "$tmpfile" "$file"
             checkov -f "$file" --output github_failed_only
           done
