@@ -149,9 +149,11 @@ jobs:
       - name: Format Deployment Files
         run: | 
           export KUBE_DEPLOYMENT_IMAGE=flask-react-app:${{ steps.extract_branch.outputs.branch_hash }}@sha256:123
-          envsubst < iac_changed_files/lib/kube/preview/deployment.yaml 
-
-          
+          for file in iac_changed_files/lib/kube/{preview,production,shared}/*.yaml; do
+            tmpfile=$(mktemp)
+            envsubst < "$file"
+          done
+      
       - name: Run Trivy scan on IaC
         if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' }}
         id: trivy_iac
