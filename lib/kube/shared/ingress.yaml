@@ -25,4 +25,3 @@ spec:
                 name: $KUBE_APP-service
                 port:
                   number: 8080
-
