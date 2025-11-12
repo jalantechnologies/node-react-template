@@ -157,6 +157,8 @@ jobs:
           export KUBE_ENV=preview
           export KUBE_NS=default
           envsubst < iac_changed_files/lib/kube/preview/deployment.yaml >> iac_changed_files/lib/kube/preview/deployment.yaml
+          envsubst < iac_changed_files/lib/kube/production/deployment.yaml >> iac_changed_files/lib/kube/production/deployment.yaml
+
 
       - name: Run Trivy scan on IaC
         if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' }}
