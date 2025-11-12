@@ -156,8 +156,7 @@ jobs:
       - name: Format Deployment Files
         run: | 
           export KUBE_DEPLOYMENT_IMAGE=flask-react-app:${{ steps.extract_branch.outputs.branch_hash }}@sha256:123
-          envsubst < iac_changed_files/lib/kube/preview/deployment.yaml > iac_changed_files/lib/kube/preview/deployment.yaml
-          cat iac_changed_files/lib/kube/preview/deployment.yaml
+          envsubst < iac_changed_files/lib/kube/preview/deployment.yaml 
 
           
       - name: Run Trivy scan on IaC
