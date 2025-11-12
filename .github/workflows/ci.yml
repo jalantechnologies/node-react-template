@@ -146,6 +146,21 @@ jobs:
 
           echo "FILTERED_FILES=$FILTERED_FILES" >> $GITHUB_OUTPUT
 
+      - name: Format Deployment Files
+        run: |
+          export KUBE_DEPLOYMENT_IMAGE="${KUBE_DEPLOYMENT_IMAGE:-flask-react-app:default}"
+          export KUBE_ENV="${KUBE_ENV:-production}"
+          export KUBE_INGRESS_HOSTNAME="${KUBE_INGRESS_HOSTNAME:-localhost}"
+          
+          for file in iac_changed_files/lib/kube/{preview,production,shared}/*.yaml; do
+            if [ -f "$file" ]; then
+              tmpfile=$(mktemp)
+              envsubst < "$file" > "$tmpfile" && mv "$tmpfile" "$file"
+            else
+              echo "File $file not found, skipping..."
+            fi
+          done
+
       - name: Run Trivy scan on IaC
         if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' }}
         id: trivy_iac
