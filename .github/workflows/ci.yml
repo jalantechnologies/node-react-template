@@ -146,9 +146,11 @@ jobs:
 
           echo "FILTERED_FILES=$FILTERED_FILES" >> $GITHUB_OUTPUT
 
-      # - name: Format Deployment Files
-      #   run: | 
-      #     export KUBE_DEPLOYMENT_IMAGE=flask-react-app:${{ steps.extract_branch.outputs.branch_hash }}@sha256:123
+      - name: Format Deployment Files
+        run: | 
+          export KUBE_DEPLOYMENT_IMAGE=flask-react-app:${{ steps.extract_branch.outputs.branch_hash }}@sha256:123
+          mkdir -p formatted_files
+          envsubst < iac_changed_files/lib/kube/preview.yaml > formatted_files/deployment.yaml 
       #     for file in iac_changed_files/lib/kube/{preview,production,shared}/*.yaml; do
       #       tmpfile=$(mktemp)
       #       envsubst < "$file" > "$tmpfile" && mv "$tmpfile" "$file"
@@ -186,7 +188,7 @@ jobs:
         uses: bridgecrewio/checkov-action@v12
         continue-on-error: true
         with:
-          directory: iac_changed_files/
+          directory: formatted_files/
           output_format: 'github_failed_only'
           output_file_path: checkov_result
           quiet: 'true'
