@@ -160,12 +160,8 @@ jobs:
           export KUBE_INGRESS_HOSTNAME=test.com
           
           for file in lib/kube/{preview,production,shared}/*.yaml; do
-            if [ -f "$file" ]; then
-              tmpfile=$(mktemp)
-              envsubst < "$file" > "$file"
-            else
-              echo "File $file not found, skipping..."
-            fi
+            tmpfile=$(mktemp)
+            envsubst < "$file" > "$tmpfile" && mv "$tmpfile" "$file"
           done
 
       - name: Run Trivy scan on IaC
