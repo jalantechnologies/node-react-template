@@ -162,6 +162,7 @@ jobs:
           export GITHUB_SHA=test_sha
           export KUBE_DEPLOY_ID=123
           export KUBE_ENV=preview
+          export KUBE_NS=default
           envsubst < iac_changed_files/lib/kube/preview/deployment.yaml > iac_changed_files/lib/kube/preview/deployment.yaml
           envsubst < iac_changed_files/lib/kube/production/deployment.yaml > iac_changed_files/lib/kube/production/deployment.yaml
 
