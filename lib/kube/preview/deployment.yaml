@@ -62,9 +62,9 @@ spec:
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
             - name: 
-          envFrom:
-            - secretRef:
-                name: $DOPPLER_MANAGED_SECRET_NAME
+          # envFrom:
+          #   - secretRef:
+          #       name: $DOPPLER_MANAGED_SECRET_NAME
           startupProbe:
             httpGet:
               path: /
