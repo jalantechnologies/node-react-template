@@ -44,9 +44,9 @@ spec:
           image: $KUBE_DEPLOYMENT_IMAGE
           imagePullPolicy: Always
           securityContext:
-          capabilities:
-            drop:
-             - ALL
+            capabilities:
+              drop:
+              - ALL
           resources:
             requests:
               cpu: 250m

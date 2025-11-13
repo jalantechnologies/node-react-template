@@ -42,6 +42,10 @@ spec:
               memory: '512Mi'
           ports:
             - containerPort: 8080
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
           env:
             - name: NODE_ENV
               value: 'production'
