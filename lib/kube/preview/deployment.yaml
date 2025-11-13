@@ -61,10 +61,10 @@ spec:
               - ALL
           resources:
             requests:
-              cpu: 250m
+              cpu: 20m
               memory: '256Mi'
             limits:
-              cpu: 500m
+              cpu: 20m
               memory: '512Mi'
           ports:
             - containerPort: 8080
