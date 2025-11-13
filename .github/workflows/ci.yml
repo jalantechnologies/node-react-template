@@ -232,11 +232,11 @@ jobs:
       #     issue-number: ${{ github.event.pull_request.number }}
       #     body-path: trivy-docker-report.md
       
-      # - name: Fail job if Trivy found issues
-      #   if: steps.trivy.outcome == 'failure' || steps.trivy_docker.outcome == 'failure' || steps.checkov.outcome == 'failure'
-      #   run: |
-      #     echo "❌ Trivy found vulnerabilities — failing the job."
-      #     exit 1
+      - name: Fail job if Trivy found issues
+        if: steps.trivy.outcome == 'failure' || steps.trivy_docker.outcome == 'failure' || steps.checkov.outcome == 'failure'
+        run: |
+          echo "❌ Trivy found vulnerabilities — failing the job."
+          exit 1
 
   test:
     if: github.event.pull_request.state == 'open' && github.event.pull_request.draft == false
