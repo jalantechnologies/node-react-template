@@ -14,19 +14,6 @@ updates:
       - "dependencies"
       - "security"
 
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    groups:
-      pip-all:
-        patterns:
-          - "*"
-    labels:
-      - "dependencies"
-      - "security"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
