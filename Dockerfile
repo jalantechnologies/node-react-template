@@ -28,8 +28,8 @@ ARG NODE_CONFIG_ENV
 RUN npm run build
 
 # Create necessary directories and change ownership to appuser
-RUN mkdir -p /opt/app/tmp /opt/app/logs /home/appuser/.cache && \
-    chown -R appuser:appuser /opt/app /home/appuser
+RUN mkdir -p /opt/app/tmp /opt/app/logs /opt/app/output /app/output /home/appuser/.cache && \
+    chown -R appuser:appuser /opt/app /home/appuser /app
 
 # Switch to the non-root user
 USER appuser
