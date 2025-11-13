@@ -33,7 +33,6 @@ export default class App {
     this.app = express();
 
     // Now process.env works as usual
-    console.log('Loaded secrets into env:', Object.keys(process.env));
     this.app.use(App.getRequestLogger());
 
     const restAPIServer = this.createRESTApiServer();
