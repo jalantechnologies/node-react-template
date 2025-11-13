@@ -51,9 +51,6 @@ spec:
               value: $KUBE_INGRESS_HOSTNAME
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
-          envFrom:
-            - secretRef:
-                name: $DOPPLER_MANAGED_SECRET_NAME
           startupProbe:
             httpGet:
               path: /
@@ -70,4 +67,10 @@ spec:
               path: /
               port: 8080
             initialDelaySeconds: 30
-
+          volumeMounts:
+          - name: secret-ref
+            mountPath: /opt/app/secrets
+      volumes: 
+        - name: secret-ref
+          secret:
+            secretName: $DOPPLER_MANAGED_SECRET_NAME

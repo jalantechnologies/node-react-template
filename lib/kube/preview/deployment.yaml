@@ -43,6 +43,10 @@ spec:
         - name: $KUBE_APP
           image: $KUBE_DEPLOYMENT_IMAGE
           imagePullPolicy: Always
+          securityContext:
+          capabilities:
+            drop:
+             - ALL
           resources:
             requests:
               cpu: 250m
