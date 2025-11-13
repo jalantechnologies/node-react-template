@@ -32,7 +32,6 @@ export default class App {
   public static async startServer(): Promise<Server> {
     this.app = express();
 
-    // Now process.env works as usual
     this.app.use(App.getRequestLogger());
 
     const restAPIServer = this.createRESTApiServer();
