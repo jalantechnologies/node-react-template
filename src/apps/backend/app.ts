@@ -18,15 +18,6 @@ import cors from 'cors';
 import express, { Application } from 'express';
 import expressWinston from 'express-winston';
 
-const secretsDir = process.env.SECRETS_DIR || '/opt/app/secrets';
-
-fs.readdirSync(`${secretsDir}`).forEach((file) => {
-  console.log(file);
-  if (!file.startsWith('.')) {
-    process.env[file] = fs.readFileSync(`${secretsDir}/${file}`, 'utf8').trim();
-  }
-});
-
 interface APIMicroserviceService {
   rootFolderPath: string;
   serverInstance: ApplicationServer;
@@ -44,7 +35,7 @@ export default class App {
 
     // Now process.env works as usual
     console.log('Loaded secrets into env:', Object.keys(process.env));
-
+    this.loadSecretsFromDir();
     this.app.use(App.getRequestLogger());
 
     const restAPIServer = this.createRESTApiServer();
@@ -158,6 +149,24 @@ export default class App {
   private static getErrorLogger(): express.ErrorRequestHandler {
     return expressWinston.errorLogger({
       transports: [new CustomLoggerTransport()],
+    });
+  }
+
+  private static loadSecretsFromDir() {
+    const secretsDir = process.env.SECRETS_DIR || '/opt/app/secrets';
+
+    // Make it safe for tests / local runs
+    if (!fs.existsSync(secretsDir)) {
+      return;
+    }
+
+    fs.readdirSync(secretsDir).forEach((file) => {
+      if (file.startsWith('.')) return;
+
+      const fullPath = path.join(secretsDir, file);
+      if (!fs.statSync(fullPath).isFile()) return;
+
+      process.env[file] = fs.readFileSync(fullPath, 'utf8').trim();
     });
   }
 }
