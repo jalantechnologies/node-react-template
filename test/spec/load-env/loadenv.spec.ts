@@ -4,7 +4,6 @@ import fs from 'fs';
 import { loadEnvVars } from 'backend/modules/config';
 import sinon from 'sinon';
 
-
 const ENV_KEYS = [
   'JWT_TOKEN',
   'DD_API_KEY',
@@ -27,7 +26,7 @@ const ENV_KEYS = [
   'WEB_APP_HOST',
 ];
 
-describe('initSecretsFromFiles', () => {
+describe('loadEnvVars', () => {
   let existsSyncStub: sinon.SinonStub;
   let readFileSyncStub: sinon.SinonStub;
 
