@@ -62,7 +62,7 @@ spec:
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
             - name: SECRETS_DIR
-              value: /opt/app/secret
+              value: /opt/app/secrets
           envFrom:
             - secretRef:
                 name: $DOPPLER_MANAGED_SECRET_NAME
