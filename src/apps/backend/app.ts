@@ -25,6 +25,13 @@ interface APIMicroserviceService {
 
 const isDevEnv = process.env.NODE_ENV === 'development';
 
+const secretsDir = '/etc/secrets';
+fs.readdirSync(secretsDir).forEach((file) => {
+  process.env[file] = fs
+    .readFileSync(path.join(secretsDir, file), 'utf8')
+    .trim();
+});
+
 export default class App {
   public static baseAPIRoutePath = '/api';
 
@@ -32,13 +39,6 @@ export default class App {
 
   public static async startServer(): Promise<Server> {
     this.app = express();
-
-    const secretsDir = '/etc/secrets';
-    fs.readdirSync(secretsDir).forEach((file) => {
-      process.env[file] = fs
-        .readFileSync(path.join(secretsDir, file), 'utf8')
-        .trim();
-    });
 
     // Now process.env works as usual
     console.log('Loaded secrets into env:', Object.keys(process.env));
