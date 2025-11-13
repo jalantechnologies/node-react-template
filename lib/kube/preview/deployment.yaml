@@ -39,13 +39,13 @@ spec:
                       - platform-cluster-01-staging-pool
       imagePullSecrets:
         - name: regcred
-      initContainers:
-      - name: load-secrets
-        image: busybox
-        command: ["sh", "-c", "for f in /etc/secrets/*; do export $(basename $f)=$(cat $f); done"]
-        volumeMounts:
-          - name: secret-ref
-            mountPath: /etc/secrets
+      # initContainers:
+      # - name: load-secrets
+      #   image: busybox
+      #   command: ["sh", "-c", "for f in /etc/secrets/*; do export $(basename $f)=$(cat $f); done"]
+      #   volumeMounts:
+      #     - name: secret-ref
+      #       mountPath: /etc/secrets
       containers:
         - name: $KUBE_APP
           image: $KUBE_DEPLOYMENT_IMAGE
@@ -71,6 +71,29 @@ spec:
           volumeMounts:
           - name: secret-ref
             mountPath: /etc/secrets
+          command: ["/bin/sh","-c"]
+          args:
+          - |
+            set -eu
+
+            for f in /etc/secrets/*; do
+              [ -f "$f" ] || continue
+
+              name=${f##*/}  # strip path without calling basename(1)
+
+              # SANITIZE: upper + replace invalid chars with _ 
+              var=$(printf '%s' "$name" | tr '[:lower:]' '[:upper:]' | tr -c 'A-Z0-9_' '_')
+
+              # Ensure the first char is a letter or underscore
+              case "$var" in
+                [A-Z_]* ) : ;;
+                * ) var="_$var" ;;
+              esac
+
+              value="$(cat "$f")"
+              export "$var=$value"
+            done
+            exec npm start
           startupProbe:
             httpGet:
               path: /
