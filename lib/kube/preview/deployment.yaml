@@ -63,11 +63,11 @@ spec:
               value: $KUBE_APP
             - name: SECRETS_DIR
               value: /opt/app/secrets
-            - name: DD_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: $DOPPLER_MANAGED_SECRET_NAME
-                  key: DD_API_KEY
+            # - name: DD_API_KEY
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: $DOPPLER_MANAGED_SECRET_NAME
+            #       key: DD_API_KEY
           # envFrom:
           #   - secretRef:
           #       name: $DOPPLER_MANAGED_SECRET_NAME
