@@ -39,13 +39,6 @@ spec:
                       - platform-cluster-01-staging-pool
       imagePullSecrets:
         - name: regcred
-      # initContainers:
-      # - name: load-secrets
-      #   image: busybox
-      #   command: ["sh", "-c", "for f in /etc/secrets/*; do export $(basename $f)=$(cat $f); done"]
-      #   volumeMounts:
-      #     - name: secret-ref
-      #       mountPath: /etc/secrets
       containers:
         - name: $KUBE_APP
           image: $KUBE_DEPLOYMENT_IMAGE
@@ -68,9 +61,10 @@ spec:
               value: $KUBE_INGRESS_HOSTNAME
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
-          volumeMounts:
-          - name: secret-ref
-            mountPath: /etc/secrets
+            - name: 
+          envFrom:
+            - secretRef:
+                name: $DOPPLER_MANAGED_SECRET_NAME
           startupProbe:
             httpGet:
               path: /
@@ -87,6 +81,9 @@ spec:
               path: /
               port: 8080
             initialDelaySeconds: 30
+          volumeMounts:
+          - name: secret-ref
+            mountPath: /etc/secrets
       volumes: 
         - name: secret-ref
           secret:
