@@ -25,25 +25,16 @@ interface APIMicroserviceService {
 
 const isDevEnv = process.env.NODE_ENV === 'development';
 
-function loadSecretsFromDir() {
-  const secretsDir = process.env.SECRETS_DIR || '/opt/app/secrets';
+const secretsDir = process.env.SECRETS_DIR || '/opt/app/secrets';
 
-  // Make it safe for tests / local runs
-  if (!fs.existsSync(secretsDir)) {
-    return;
-  }
+fs.readdirSync(secretsDir).forEach((file) => {
+  if (file.startsWith('.')) return;
 
-  fs.readdirSync(secretsDir).forEach((file) => {
-    if (file.startsWith('.')) return;
+  const fullPath = path.join(secretsDir, file);
+  if (!fs.statSync(fullPath).isFile()) return;
 
-    const fullPath = path.join(secretsDir, file);
-    if (!fs.statSync(fullPath).isFile()) return;
-
-    process.env[file] = fs.readFileSync(fullPath, 'utf8').trim();
-  });
-}
-
-loadSecretsFromDir();
+  process.env[file] = fs.readFileSync(fullPath, 'utf8').trim();
+});
 
 export default class App {
   public static baseAPIRoutePath = '/api';
