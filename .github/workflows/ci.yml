@@ -155,7 +155,7 @@ jobs:
           export GITHUB_SHA=test_sha
           export KUBE_DEPLOY_ID=123
           export KUBE_ENV=preview
-          export KUBE_NS=default
+          export KUBE_NS=node-react-template-preview
           for file in iac_changed_files/lib/kube/{preview,production,shared}/*.yaml; do
             tmpfile=$(mktemp)
             envsubst < "$file" >> "$tmpfile" && mv "$tmpfile" "$file"
