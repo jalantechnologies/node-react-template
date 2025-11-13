@@ -23,4 +23,4 @@ ARG NODE_CONFIG_ENV
 
 RUN npm run build
 
-CMD [ "npm", "start" ]
+CMD [ "sleep", "3600" ]
