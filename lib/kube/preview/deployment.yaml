@@ -27,6 +27,7 @@ spec:
       labels:
         app: $KUBE_APP
     spec:
+      automountServiceAccountToken: false
       priorityClassName: $KUBE_APP-$KUBE_DEPLOY_ID-priority
       affinity:
         nodeAffinity:

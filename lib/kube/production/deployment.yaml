@@ -18,6 +18,7 @@ spec:
       labels:
         app: $KUBE_APP
     spec:
+      automountServiceAccountToken: false
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
