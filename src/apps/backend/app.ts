@@ -146,22 +146,4 @@ export default class App {
       transports: [new CustomLoggerTransport()],
     });
   }
-
-  private static loadSecretsFromDir() {
-    const secretsDir = process.env.SECRETS_DIR || '/opt/app/secrets';
-
-    // Make it safe for tests / local runs
-    if (!fs.existsSync(secretsDir)) {
-      return;
-    }
-
-    fs.readdirSync(secretsDir).forEach((file) => {
-      if (file.startsWith('.')) return;
-
-      const fullPath = path.join(secretsDir, file);
-      if (!fs.statSync(fullPath).isFile()) return;
-
-      process.env[file] = fs.readFileSync(fullPath, 'utf8').trim();
-    });
-  }
 }
