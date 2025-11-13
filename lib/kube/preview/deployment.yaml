@@ -114,3 +114,4 @@ spec:
           emptyDir: {}            # Temporary storage for log files
         - name: system-tmp
           emptyDir: {}            # Temporary storage for system files
+
