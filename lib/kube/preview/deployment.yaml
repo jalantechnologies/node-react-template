@@ -44,6 +44,7 @@ spec:
           image: $KUBE_DEPLOYMENT_IMAGE
           imagePullPolicy: Always
           securityContext:
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
               - ALL
