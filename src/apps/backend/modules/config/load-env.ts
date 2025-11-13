@@ -2,7 +2,13 @@ import fs from 'fs';
 import path from 'path';
 
 export default function loadEnvVars() {
-  const secretsDir = process.env.SECRETS_DIR || '/opt/app/secrets';
+  if (process.env.NODE_CONFIG_ENV === 'testing') {
+    return;
+  }
+  const secretsDir = `${process.env.SECRETS_DIR}`;
+  if (!fs.existsSync(secretsDir)) {
+    return;
+  }
   fs.readdirSync(secretsDir).forEach((file) => {
     if (file.startsWith('.')) return;
     const fullPath = path.join(secretsDir, file);
