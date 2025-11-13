@@ -44,7 +44,7 @@ spec:
         image: busybox
         command: ["sh", "-c", "for f in /etc/secrets/*; do export $(basename $f)=$(cat $f); done"]
         volumeMounts:
-          - name: app-secrets
+          - name: secret-ref
             mountPath: /etc/secrets
       containers:
         - name: $KUBE_APP
