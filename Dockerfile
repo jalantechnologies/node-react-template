@@ -23,11 +23,13 @@ ARG NODE_CONFIG_ENV
 
 RUN npm run build
 
-# Create non-root user and set up directories
-RUN groupadd -r appuser --gid=10001 && \
-    useradd -r -g appuser --uid=10001 --home-dir=/opt/app --shell=/bin/bash appuser && \
-    mkdir -p /opt/app/tmp /opt/app/logs && \
-    chown -R appuser:appuser /opt/app
+# Create non-root user for security - use consistent UID/GID across environments
+RUN groupadd -r -g 10001 app && \
+    useradd -r -u 10001 -g 10001 -m appuser
+
+# Create directories and set ownership for non-root user to write files
+RUN mkdir -p /opt/app/tmp /opt/app/logs /opt/app/output /home/appuser/.cache /app/output && \
+    chown -R appuser:app /opt/app /home/appuser /app/output
 
 USER appuser
 
