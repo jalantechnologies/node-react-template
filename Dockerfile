@@ -23,4 +23,12 @@ ARG NODE_CONFIG_ENV
 
 RUN npm run build
 
+# Create non-root user and set up directories
+RUN groupadd -r appuser --gid=10001 && \
+    useradd -r -g appuser --uid=10001 --home-dir=/opt/app --shell=/bin/bash appuser && \
+    mkdir -p /opt/app/tmp /opt/app/logs && \
+    chown -R appuser:appuser /opt/app
+
+USER appuser
+
 CMD [ "npm", "start" ]

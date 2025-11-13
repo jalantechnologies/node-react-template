@@ -17,7 +17,19 @@ spec:
     metadata:
       labels:
         app: $KUBE_APP
+        # Add component label for network policy matching
+        component: node-react-template-production
     spec:
+      # Disable automatic mounting of service account token for security
+      automountServiceAccountToken: false
+      # Pod-level security context - applies to all containers
+      securityContext:
+        runAsUser: 10001          # Run as non-root user
+        runAsGroup: 10001         # Run as non-root group
+        runAsNonRoot: true        # Enforce non-root execution
+        fsGroup: 10001            # Set file system group ownership
+        seccompProfile:           # Enable secure computing mode
+          type: RuntimeDefault
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -33,6 +45,14 @@ spec:
         - name: $KUBE_APP
           image: $KUBE_DEPLOYMENT_IMAGE
           imagePullPolicy: Always
+          # Container-level security context - additional restrictions
+          securityContext:
+            allowPrivilegeEscalation: false  # Prevent privilege escalation
+            readOnlyRootFilesystem: true     # Make root filesystem read-only
+            runAsNonRoot: true               # Enforce non-root at container level
+            capabilities:                    # Drop all Linux capabilities
+              drop:
+                - ALL
           resources:
             requests:
               memory: '256Mi'
@@ -52,6 +72,14 @@ spec:
           envFrom:
             - secretRef:
                 name: $DOPPLER_MANAGED_SECRET_NAME
+          # Mount writable directories since root filesystem is read-only
+          volumeMounts:
+            - name: tmp
+              mountPath: /opt/app/tmp        # App temporary files
+            - name: logs
+              mountPath: /opt/app/logs       # App log files
+            - name: system-tmp
+              mountPath: /tmp                # System temporary files
           startupProbe:
             httpGet:
               path: /
@@ -68,3 +96,11 @@ spec:
               path: /
               port: 8080
             initialDelaySeconds: 30
+      # Define writable volumes for the read-only filesystem
+      volumes:
+        - name: tmp
+          emptyDir: {}            # Temporary storage for app files
+        - name: logs
+          emptyDir: {}            # Temporary storage for log files
+        - name: system-tmp
+          emptyDir: {}            # Temporary storage for system files
