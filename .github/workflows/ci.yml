@@ -148,8 +148,8 @@ jobs:
 
       - name: Format Deployment Files
         run: |
-          export KUBE_DEPLOYMENT_IMAGE=flask-react-app:latest@123
-          export KUBE_APP=flask-react-app
+          export KUBE_DEPLOYMENT_IMAGE=node-react-template:latest@123
+          export KUBE_APP=node-react-template
           export KUBE_INGRESS_HOSTNAME=test.com
           export DOPPLER_MANAGED_SECRET_NAME=secret
           export GITHUB_SHA=test_sha
