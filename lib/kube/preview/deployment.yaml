@@ -51,6 +51,13 @@ spec:
                       - platform-cluster-01-staging-pool
       imagePullSecrets:
         - name: regcred
+      initContainers:
+      - name: load-secrets
+        image: busybox
+        command: ["sh", "-c", "for f in /etc/secrets/*; do export $(basename $f)=$(cat $f); done"]
+        volumeMounts:
+          - name: app-secrets
+            mountPath: /etc/secrets
       containers:
         - name: $KUBE_APP
           image: $KUBE_DEPLOYMENT_IMAGE
