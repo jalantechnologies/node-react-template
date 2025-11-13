@@ -70,7 +70,7 @@ spec:
               value: $KUBE_APP
           volumeMounts:
           - name: secret-ref
-            mountPath: /etc/config
+            mountPath: /etc/secrets
           startupProbe:
             httpGet:
               path: /
