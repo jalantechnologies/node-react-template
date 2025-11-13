@@ -1,5 +1,4 @@
 import 'module-alias/register';
-import fs from 'fs';
 import { Server } from 'http';
 import * as path from 'path';
 
@@ -17,16 +16,6 @@ import { TaskServer } from 'backend/modules/task';
 import cors from 'cors';
 import express, { Application } from 'express';
 import expressWinston from 'express-winston';
-
-const secretsDir = process.env.SECRETS_DIR || '/opt/app/secrets';
-
-fs.readdirSync(secretsDir).forEach((file) => {
-  if (file.startsWith('.')) return;
-  const fullPath = path.join(secretsDir, file);
-  if (!fs.statSync(fullPath).isFile()) return;
-
-  process.env[file] = fs.readFileSync(fullPath, 'utf8').trim();
-});
 
 interface APIMicroserviceService {
   rootFolderPath: string;
