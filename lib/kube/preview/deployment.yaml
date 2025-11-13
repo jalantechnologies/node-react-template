@@ -67,7 +67,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: $DOPPLER_MANAGED_SECRET_NAME
-                  value: DD_API_KEY
+                  key: DD_API_KEY
           # envFrom:
           #   - secretRef:
           #       name: $DOPPLER_MANAGED_SECRET_NAME
