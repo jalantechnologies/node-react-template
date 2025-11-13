@@ -18,19 +18,19 @@ import cors from 'cors';
 import express, { Application } from 'express';
 import expressWinston from 'express-winston';
 
-interface APIMicroserviceService {
-  rootFolderPath: string;
-  serverInstance: ApplicationServer;
-}
-
-const isDevEnv = process.env.NODE_ENV === 'development';
-
 const secretsDir = '/opt/app/secrets';
 fs.readdirSync(secretsDir).forEach((file) => {
   process.env[file] = fs
     .readFileSync(path.join(secretsDir, file), 'utf8')
     .trim();
 });
+
+interface APIMicroserviceService {
+  rootFolderPath: string;
+  serverInstance: ApplicationServer;
+}
+
+const isDevEnv = process.env.NODE_ENV === 'development';
 
 export default class App {
   public static baseAPIRoutePath = '/api';
