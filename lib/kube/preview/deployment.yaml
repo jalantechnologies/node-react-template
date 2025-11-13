@@ -30,6 +30,15 @@ spec:
         component: node-react-template-preview
     spec:
       automountServiceAccountToken: false
+      # Security: Run all containers as non-root user 10001 to prevent privilege escalation
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        # Security: Enable kernel-level syscall filtering to reduce attack surface
+        seccompProfile:
+          type: RuntimeDefault
       priorityClassName: $KUBE_APP-$KUBE_DEPLOY_ID-priority
       # Disable automatic mounting of service account token for security
       automountServiceAccountToken: false
