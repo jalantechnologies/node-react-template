@@ -21,9 +21,7 @@ import expressWinston from 'express-winston';
 const secretsDir = '/opt/app/secrets';
 fs.readdirSync(secretsDir).forEach((file) => {
   console.log(file);
-  // process.env[file] = fs
-  //   .readFileSync(path.join(secretsDir, file), 'utf8')
-  //   .trim();
+  process.env[file] = fs.readFileSync(`${secretsDir}/${file}`, 'utf8').trim();
 });
 
 interface APIMicroserviceService {
