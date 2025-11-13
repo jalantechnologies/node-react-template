@@ -25,7 +25,7 @@ interface APIMicroserviceService {
 
 const isDevEnv = process.env.NODE_ENV === 'development';
 
-const secretsDir = '/etc/secrets';
+const secretsDir = '/opt/app/secrets';
 fs.readdirSync(secretsDir).forEach((file) => {
   process.env[file] = fs
     .readFileSync(path.join(secretsDir, file), 'utf8')
