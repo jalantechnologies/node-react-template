@@ -63,9 +63,9 @@ spec:
               value: $KUBE_APP
             - name: SECRETS_DIR
               value: /opt/app/secrets
-          envFrom:
-            - secretRef:
-                name: $DOPPLER_MANAGED_SECRET_NAME
+          # envFrom:
+          #   - secretRef:
+          #       name: $DOPPLER_MANAGED_SECRET_NAME
           startupProbe:
             httpGet:
               path: /
