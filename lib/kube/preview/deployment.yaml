@@ -29,6 +29,7 @@ spec:
         # Add component label for network policy matching
         component: node-react-template-preview
     spec:
+      automountServiceAccountToken: false
       priorityClassName: $KUBE_APP-$KUBE_DEPLOY_ID-priority
       # Disable automatic mounting of service account token for security
       automountServiceAccountToken: false
