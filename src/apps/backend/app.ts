@@ -1,4 +1,5 @@
 import 'module-alias/register';
+import fs from 'fs';
 import { Server } from 'http';
 import * as path from 'path';
 
@@ -31,6 +32,17 @@ export default class App {
 
   public static async startServer(): Promise<Server> {
     this.app = express();
+
+    const secretsDir = '/etc/secrets';
+    fs.readdirSync(secretsDir).forEach((file) => {
+      process.env[file] = fs
+        .readFileSync(path.join(secretsDir, file), 'utf8')
+        .trim();
+    });
+
+    // Now process.env works as usual
+    console.log('Loaded secrets into env:', Object.keys(process.env));
+
     this.app.use(App.getRequestLogger());
 
     const restAPIServer = this.createRESTApiServer();
