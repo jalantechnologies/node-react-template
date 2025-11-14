@@ -17,10 +17,14 @@ services:
     depends_on:
       - db
     volumes:
-      - ./output:/app/output
+      # Use named volume instead of bind mount to avoid permission issues with non-root user
+      - test_output:/app/output
 
   db:
     image: mongo:5.0
     command: mongod --quiet --logpath /dev/null
     ports:
       - '27017:27017'
+
+volumes:
+  test_output:
