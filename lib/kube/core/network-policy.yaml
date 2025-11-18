@@ -33,6 +33,13 @@ spec:
   podSelector:
     matchLabels:
       component: node-react-template-preview
+    # For production rollout, replace above with:
+    # matchExpressions:
+    #   - key: component
+    #     operator: In
+    #     values:
+    #       - node-react-template-preview
+    #       - node-react-template-production
   policyTypes:
     - Egress
   egress:
@@ -80,6 +87,13 @@ spec:
   podSelector:
     matchLabels:
       component: node-react-template-preview
+    # For production rollout, replace above with:
+    # matchExpressions:
+    #   - key: component
+    #     operator: In
+    #     values:
+    #       - node-react-template-preview
+    #       - node-react-template-production
   policyTypes:
     - Ingress
   ingress:
