@@ -86,7 +86,7 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: ingress-nginx
+              kubernetes.io/metadata.name: default
       ports:
         - protocol: TCP
           port: 8080
