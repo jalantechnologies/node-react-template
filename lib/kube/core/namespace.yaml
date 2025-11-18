@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: $KUBE_NS
+  labels:
+    app.kubernetes.io/name: $KUBE_APP
+    app.kubernetes.io/managed-by: github-ci
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    kubernetes.io/metadata.name: $KUBE_NS  # For NetworkPolicy selectors

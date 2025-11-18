@@ -1,0 +1,92 @@
+---
+# Deny all ingress by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: $KUBE_NS
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# Deny all egress by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: $KUBE_NS
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+
+---
+# Allow app egress for essential services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-app-egress
+  namespace: $KUBE_NS
+spec:
+  podSelector:
+    matchLabels:
+      component: node-react-template-preview
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow HTTPS to external APIs and services
+    - ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow MongoDB connections (external managed service)
+    - ports:
+        - protocol: TCP
+          port: 27017
+
+    # Allow syslog for Papertrail logging
+    - ports:
+        - protocol: UDP
+          port: 514
+        - protocol: TCP
+          port: 514
+
+    # Allow HTTP for external APIs (consider removing in production)
+    - ports:
+        - protocol: TCP
+          port: 80
+
+---
+# Allow ingress from nginx-ingress to app
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-app
+  namespace: $KUBE_NS
+spec:
+  podSelector:
+    matchLabels:
+      component: node-react-template-preview
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
