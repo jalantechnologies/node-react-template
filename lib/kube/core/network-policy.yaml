@@ -32,7 +32,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      component: node-react-template-$KUBE_ENV  # Only apply to your app pods
+      component: $KUBE_NS  # Only apply to your app pods
   policyTypes:
     - Egress
   egress:
@@ -81,7 +81,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      component: node-react-template-$KUBE_ENV  # Only apply to your app pods
+      component: $KUBE_NS  # Only apply to your app pods
   policyTypes:
     - Ingress
   ingress:
