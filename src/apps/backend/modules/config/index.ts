@@ -1,3 +1,2 @@
-export { default as loadEnvVars } from 'backend/modules/config/load-env';
 export { default as ConfigService } from 'backend/modules/config/config-service';
 export * from 'backend/modules/config/types';
