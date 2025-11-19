@@ -27,7 +27,7 @@ spec:
       labels:
         app: $KUBE_APP
         # Add component label for network policy matching
-        component: node-react-template-preview
+        component: $KUBE_NS
     spec:
       priorityClassName: $KUBE_APP-$KUBE_DEPLOY_ID-priority
       automountServiceAccountToken: false
@@ -71,10 +71,6 @@ spec:
               memory: '512Mi'
           ports:
             - containerPort: 8080
-          command:
-            - /opt/app/scripts/export_doppler_env.sh
-            - npm
-            - start
           env:
             - name: NODE_ENV
               value: 'production'

@@ -11,11 +11,9 @@ export default class ConfigService {
     }
 
     const value = config.get<T>(key);
-
     if (_.isNil(value)) {
       throw new ConfigMissingError(key);
     }
-
     return value;
   }
 

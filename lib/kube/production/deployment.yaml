@@ -18,7 +18,7 @@ spec:
       labels:
         app: $KUBE_APP
         # Add component label for network policy matching
-        component: node-react-template-production
+        component: $KUBE_NS
     spec:
       # Disable automatic mounting of service account token for security
       automountServiceAccountToken: false
@@ -77,9 +77,6 @@ spec:
               value: $KUBE_INGRESS_HOSTNAME
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
-          envFrom:
-            - secretRef:
-                name: $DOPPLER_MANAGED_SECRET_NAME
           # Mount writable directories since root filesystem is read-only
           volumeMounts:
             - name: tmp
