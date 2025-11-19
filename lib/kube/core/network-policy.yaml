@@ -1,42 +1,55 @@
 ---
-# Block all incoming traffic by default (like closing all doors)
+# Default deny-all ingress policy - blocks all incoming traffic by default
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-deny-ingress
   namespace: $KUBE_NS
 spec:
-  podSelector: {}  # Apply to all pods in this namespace
+  podSelector: {}  # Applies to all pods in this namespace
   policyTypes:
     - Ingress
 
 ---
-# Block all outgoing traffic by default (like blocking all phone calls)
+# Default deny-all egress policy - blocks all outgoing traffic by default
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-deny-egress
   namespace: $KUBE_NS
 spec:
-  podSelector: {}  # Apply to all pods in this namespace
+  podSelector: {}  # Applies to all pods in this namespace
   policyTypes:
     - Egress
 
 ---
-# Allow your app to make specific outgoing connections
+# Application traffic policy - allows specific ingress and egress for app pods
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-app-egress
+  name: allow-app-traffic
   namespace: $KUBE_NS
 spec:
   podSelector:
     matchLabels:
-      component: $KUBE_NS  # Only apply to your app pods
+      component: $KUBE_NS  # Targets application pods only
   policyTypes:
+    - Ingress
     - Egress
+  ingress:
+    # Allow traffic from nginx ingress controller only
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080  # Application service port
   egress:
-    # Allow DNS lookups (like phone book lookups)
+    # Allow DNS resolution to kube-system namespace
     - to:
         - namespaceSelector:
             matchLabels:
@@ -47,23 +60,24 @@ spec:
         - protocol: TCP
           port: 53
 
-    # Allow HTTPS connections to external websites/APIs
-    # Note: This allows ALL HTTPS - consider restricting to specific IPs in production
-    - to: []  # Empty means "anywhere outside the cluster"
+    # Allow HTTPS connections to external services
+    # WARNING: This allows ALL external HTTPS traffic
+    # TODO: Restrict to specific external service IPs/domains for production
+    - to: []
       ports:
         - protocol: TCP
           port: 443
 
-    # Allow connections to MongoDB database
-    # Note: Consider restricting to specific MongoDB server IPs
-    - to: []  # Empty means "anywhere outside the cluster"
+    # Allow MongoDB database connections
+    # TODO: Restrict to specific MongoDB server IPs for production
+    - to: []
       ports:
         - protocol: TCP
           port: 27017
 
-    # Allow sending logs to Papertrail logging service
-    # Note: Consider restricting to specific Papertrail server IPs
-    - to: []  # Empty means "anywhere outside the cluster"
+    # Allow syslog connections for centralized logging (Papertrail)
+    # TODO: Restrict to specific logging service IPs for production
+    - to: []
       ports:
         - protocol: UDP
           port: 514
@@ -71,35 +85,7 @@ spec:
           port: 514
 
 ---
-# Allow nginx ingress controller to connect to your app
-# This is how website traffic reaches your app
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-ingress-to-app
-  namespace: $KUBE_NS
-spec:
-  podSelector:
-    matchLabels:
-      component: $KUBE_NS  # Only apply to your app pods
-  policyTypes:
-    - Ingress
-  ingress:
-    # Only allow the nginx ingress controller pods to connect
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: default  # Nginx is in default namespace
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/name: ingress-nginx  # Only nginx ingress pods
-      ports:
-        - protocol: TCP
-          port: 8080  # Your app's port
-
----
-# Allow nginx to connect to cert-manager ACME challenge pods
-# This is needed for SSL certificate generation
+# ACME HTTP-01 challenge policy - required for SSL certificate generation
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -108,11 +94,11 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      acme.cert-manager.io/http01-solver: "true"  # Only ACME solver pods
+      acme.cert-manager.io/http01-solver: "true"  # Targets cert-manager ACME solver pods
   policyTypes:
     - Ingress
   ingress:
-    # Only allow nginx ingress controller to connect to ACME solvers
+    # Allow nginx ingress controller to reach ACME challenge endpoints
     - from:
         - namespaceSelector:
             matchLabels:
@@ -122,4 +108,4 @@ spec:
               app.kubernetes.io/name: ingress-nginx
       ports:
         - protocol: TCP
-          port: 8089  # ACME challenge port
+          port: 8089  # ACME HTTP-01 challenge port
