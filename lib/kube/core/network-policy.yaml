@@ -60,29 +60,51 @@ spec:
         - protocol: TCP
           port: 53
 
-    # Allow HTTPS connections to external services
-    # WARNING: This allows ALL external HTTPS traffic
-    # TODO: Restrict to specific external service IPs/domains for production
-    - to: []
+    # Allow HTTPS to MongoDB Atlas (production-ready IP restrictions)
+    - to:
+        # MongoDB Atlas AWS IP ranges
+        - ipBlock:
+            cidr: 3.0.0.0/8
+        - ipBlock:
+            cidr: 13.0.0.0/8
+        - ipBlock:
+            cidr: 52.0.0.0/8
       ports:
         - protocol: TCP
           port: 443
-
-    # Allow MongoDB database connections
-    # TODO: Restrict to specific MongoDB server IPs for production
-    - to: []
-      ports:
         - protocol: TCP
           port: 27017
 
-    # Allow syslog connections for centralized logging (Papertrail)
-    # TODO: Restrict to specific logging service IPs for production
-    - to: []
+    # Allow connections to Papertrail logging service (specific IPs only)
+    - to:
+        - ipBlock:
+            cidr: 169.46.82.162/32  # Papertrail IP 1
+        - ipBlock:
+            cidr: 169.46.82.163/32  # Papertrail IP 2
+        - ipBlock:
+            cidr: 169.46.82.164/32  # Papertrail IP 3
+        - ipBlock:
+            cidr: 169.46.82.165/32  # Papertrail IP 4
       ports:
         - protocol: UDP
           port: 514
         - protocol: TCP
           port: 514
+
+    # Allow HTTPS to essential CDNs and APIs (restricted IP ranges)
+    - to:
+        # Cloudflare CDN
+        - ipBlock:
+            cidr: 104.16.0.0/12
+        # AWS CloudFront CDN
+        - ipBlock:
+            cidr: 54.230.0.0/16
+        # Google APIs
+        - ipBlock:
+            cidr: 142.250.0.0/15
+      ports:
+        - protocol: TCP
+          port: 443
 
 ---
 # ACME HTTP-01 challenge policy - required for SSL certificate generation
