@@ -1,29 +1,29 @@
 ---
-# Deny all ingress by default
+# Block all incoming traffic by default (like closing all doors)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-deny-ingress
   namespace: $KUBE_NS
 spec:
-  podSelector: {}
+  podSelector: {}  # Apply to all pods in this namespace
   policyTypes:
     - Ingress
 
 ---
-# Deny all egress by default
+# Block all outgoing traffic by default (like blocking all phone calls)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: default-deny-egress
   namespace: $KUBE_NS
 spec:
-  podSelector: {}
+  podSelector: {}  # Apply to all pods in this namespace
   policyTypes:
     - Egress
 
 ---
-# Allow app egress for essential services
+# Allow your app to make specific outgoing connections
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -32,18 +32,11 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      component: node-react-template-preview
-    # For production rollout, replace above with:
-    # matchExpressions:
-    #   - key: component
-    #     operator: In
-    #     values:
-    #       - node-react-template-preview
-    #       - node-react-template-production
+      component: node-react-template-$KUBE_ENV  # Only apply to your app pods
   policyTypes:
     - Egress
   egress:
-    # Allow DNS resolution
+    # Allow DNS lookups (like phone book lookups)
     - to:
         - namespaceSelector:
             matchLabels:
@@ -54,30 +47,32 @@ spec:
         - protocol: TCP
           port: 53
 
-    # Allow HTTPS to external APIs and services
-    - ports:
+    # Allow HTTPS connections to external websites/APIs
+    # Note: This allows ALL HTTPS - consider restricting to specific IPs in production
+    - to: []  # Empty means "anywhere outside the cluster"
+      ports:
         - protocol: TCP
           port: 443
 
-    # Allow MongoDB connections (external managed service)
-    - ports:
+    # Allow connections to MongoDB database
+    # Note: Consider restricting to specific MongoDB server IPs
+    - to: []  # Empty means "anywhere outside the cluster"
+      ports:
         - protocol: TCP
           port: 27017
 
-    # Allow syslog for Papertrail logging
-    - ports:
+    # Allow sending logs to Papertrail logging service
+    # Note: Consider restricting to specific Papertrail server IPs
+    - to: []  # Empty means "anywhere outside the cluster"
+      ports:
         - protocol: UDP
           port: 514
         - protocol: TCP
           port: 514
 
-    # Allow HTTP for external APIs (consider removing in production)
-    - ports:
-        - protocol: TCP
-          port: 80
-
 ---
-# Allow ingress from nginx-ingress to app
+# Allow nginx ingress controller to connect to your app
+# This is how website traffic reaches your app
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -86,21 +81,45 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      component: node-react-template-preview
-    # For production rollout, replace above with:
-    # matchExpressions:
-    #   - key: component
-    #     operator: In
-    #     values:
-    #       - node-react-template-preview
-    #       - node-react-template-production
+      component: node-react-template-$KUBE_ENV  # Only apply to your app pods
   policyTypes:
     - Ingress
   ingress:
+    # Only allow the nginx ingress controller pods to connect
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default  # Nginx is in default namespace
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx  # Only nginx ingress pods
+      ports:
+        - protocol: TCP
+          port: 8080  # Your app's port
+
+---
+# Allow nginx to connect to cert-manager ACME challenge pods
+# This is needed for SSL certificate generation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-acme-solver
+  namespace: $KUBE_NS
+spec:
+  podSelector:
+    matchLabels:
+      acme.cert-manager.io/http01-solver: "true"  # Only ACME solver pods
+  policyTypes:
+    - Ingress
+  ingress:
+    # Only allow nginx ingress controller to connect to ACME solvers
     - from:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: default
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
       ports:
         - protocol: TCP
-          port: 8080
+          port: 8089  # ACME challenge port
