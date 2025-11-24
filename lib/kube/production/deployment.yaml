@@ -43,7 +43,7 @@ spec:
         - name: regcred
       containers:
         - name: $KUBE_APP
-          image: $KUBE_DEPLOYMENT_IMAGE:$KUBE_DEPLOYMENT_TAG@sha2:$KUBE_DEPLOYMENT_DIGEST
+          image: $KUBE_DEPLOYMENT_IMAGE:$KUBE_DEPLOYMENT_TAG@$KUBE_DEPLOYMENT_DIGEST
           imagePullPolicy: Always
           # Container-level security context - additional restrictions
           securityContext:
