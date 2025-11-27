@@ -208,7 +208,7 @@ jobs:
           scan-type: 'image'
           image-ref: 'node-react-template:${{ steps.extract_branch.outputs.branch_hash }}'
           format: 'template'
-          template: 'markdown-templates/@docker-markdown.tpl'
+          template: '@markdown-templates/docker-markdown.tpl'
           output: 'trivy-docker-report.md'
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
