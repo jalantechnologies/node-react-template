@@ -115,7 +115,7 @@ jobs:
           scan-type: 'filesystem'
           scan-ref: './changed_files'
           format: 'template'
-          template: 'markdown-templates/@fs-markdown.tpl'
+          template: '@markdown-templates/fs-markdown.tpl'
           output: 'trivy-report.md'
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
@@ -162,7 +162,7 @@ jobs:
           scan-type: 'config'
           scan-ref: 'iac_changed_files'
           format: 'template'
-          template: 'markdown-templates/@iac-markdown.tpl'
+          template: '@markdown-templates/iac-markdown.tpl'
           output: 'trivy-iac-report.md'
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
