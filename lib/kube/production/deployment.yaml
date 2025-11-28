@@ -18,7 +18,7 @@ spec:
       labels:
         app: $KUBE_APP
         # Add component label for network policy matching
-        component: node-react-template-production
+        component: $KUBE_NS
     spec:
       # Disable automatic mounting of service account token for security
       automountServiceAccountToken: false
@@ -43,7 +43,7 @@ spec:
         - name: regcred
       containers:
         - name: $KUBE_APP
-          image: $KUBE_DEPLOYMENT_IMAGE
+          image: $KUBE_DEPLOYMENT_IMAGE:$KUBE_DEPLOYMENT_TAG@$KUBE_DEPLOYMENT_DIGEST
           imagePullPolicy: Always
           # Container-level security context - additional restrictions
           securityContext:
@@ -55,11 +55,19 @@ spec:
                 - ALL
           resources:
             requests:
+              cpu: 20m
               memory: '256Mi'
             limits:
+              cpu: 20m
               memory: '512Mi'
           ports:
             - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+              - ALL
           env:
             - name: NODE_ENV
               value: 'production'
@@ -69,9 +77,6 @@ spec:
               value: $KUBE_INGRESS_HOSTNAME
             - name: PAPERTRAIL_PROGRAM
               value: $KUBE_APP
-          envFrom:
-            - secretRef:
-                name: $DOPPLER_MANAGED_SECRET_NAME
           # Mount writable directories since root filesystem is read-only
           volumeMounts:
             - name: tmp
