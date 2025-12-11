@@ -13,12 +13,12 @@ services:
     command: >
       sh -c "mkdir .nyc_output && npx nyc npm test 
       && npx nyc report --reporter=cobertura 
-      && cp coverage/cobertura-coverage.xml /app/output/coverage.xml"
+      && cp coverage/cobertura-coverage.xml /opt/app/output/coverage.xml"
     depends_on:
       - db
     volumes:
-      # Use named volume instead of bind mount to avoid permission issues with non-root user
-      - test_output:/app/output
+      # Use named volume with correct path to match Dockerfile working directory
+      - test_output:/opt/app/output
 
   db:
     image: mongo:5.0
