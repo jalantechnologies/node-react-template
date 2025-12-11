@@ -23,6 +23,11 @@ FROM node:22.13.1-bookworm-slim
 
 WORKDIR /opt/app
 
+# Update packages to fix security vulnerabilities
+RUN apt-get update && apt-get upgrade -y \
+    libc-bin libc6 libgnutls30 liblzma5 perl-base \
+    && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user
 RUN groupadd -r app -g 10001 && \
     useradd -r -u 10001 -g app -m -d /home/appuser appuser
