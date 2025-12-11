@@ -85,6 +85,8 @@ spec:
               mountPath: /opt/app/logs       # App log files
             - name: system-tmp
               mountPath: /tmp                # System temporary files
+            - name: secret-ref
+              mountPath: /opt/app/secrets
           startupProbe:
             httpGet:
               path: /
@@ -109,4 +111,7 @@ spec:
           emptyDir: {}            # Temporary storage for log files
         - name: system-tmp
           emptyDir: {}            # Temporary storage for system files
+        - name: secret-ref
+          secret:
+            secretName: $DOPPLER_MANAGED_SECRET_NAME
 
