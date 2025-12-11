@@ -36,6 +36,7 @@ RUN groupadd -r app -g 10001 && \
 COPY --from=builder --chown=appuser:app /app/node_modules ./node_modules
 COPY --from=builder --chown=appuser:app /app/dist ./dist
 COPY --from=builder --chown=appuser:app /app/package*.json ./
+COPY --from=builder --chown=appuser:app /app/test ./test
 
 # Create directories
 RUN mkdir -p tmp logs output /app/output /home/appuser/.cache && \
