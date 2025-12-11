@@ -13,15 +13,16 @@ services:
       NODE_ENV: 'development'
       NODE_APP_INSTANCE: 'docker'
     command: /bin/sh -c "npm install && npm run serve"
+    user: root
     depends_on:
       - db
     ports:
       - '3000:3000'
       - '8080:8080'
     volumes:
-      - './:/app:delegated'
-      - node_modules:/app/node_modules
-    working_dir: /app
+      - './:/opt/app:delegated'
+      - node_modules:/opt/app/node_modules
+    working_dir: /opt/app
 
   db:
     image: mongo:5.0
