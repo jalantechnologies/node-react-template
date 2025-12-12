@@ -34,6 +34,7 @@ RUN groupadd -r app -g 10001 && \
 COPY --from=prod-deps --chown=appuser:app /app/node_modules ./node_modules
 # Copy build artifacts from builder stage
 COPY --from=builder --chown=appuser:app /app/dist ./dist
+COPY --from=builder --chown=appuser:app /app/config ./config
 COPY --from=builder --chown=appuser:app /app/package*.json ./
 
 USER appuser
