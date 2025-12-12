@@ -1,6 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  # checkov:skip=CKV2_K8S_6:NetworkPolicy is defined in lib/kube/core/network-policy.yaml
   name: $KUBE_APP-deployment
   namespace: $KUBE_NS
   labels:
