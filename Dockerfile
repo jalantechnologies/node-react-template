@@ -15,7 +15,7 @@ RUN npm run build
 # Production stage (minimal)
 FROM node:22.13.1-bookworm-slim
 WORKDIR /opt/app
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libnss3 libxss1 libxtst6 && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r app -g 10001 && \
