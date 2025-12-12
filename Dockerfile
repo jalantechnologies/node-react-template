@@ -17,7 +17,7 @@ RUN npm run build
 FROM node:22.13.1-bookworm-slim AS prod-deps
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci && npm cache clean --force
 
 # Production stage (minimal)
 FROM node:22.13.1-bookworm-slim
