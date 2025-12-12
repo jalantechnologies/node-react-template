@@ -7,6 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: builder
       args:
         NODE_ENV: 'development'
     environment:
@@ -20,9 +21,9 @@ services:
       - '3000:3000'
       - '8080:8080'
     volumes:
-      - './:/opt/app:delegated'
-      - node_modules:/opt/app/node_modules
-    working_dir: /opt/app
+      - './:/app:delegated'
+      - node_modules:/app/node_modules  
+    working_dir: /app
 
   db:
     image: mongo:5.0

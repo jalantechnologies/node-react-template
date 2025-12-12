@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: builder
       args:
         NODE_ENV: 'development'
     environment:
@@ -18,7 +19,7 @@ services:
       - db
     volumes:
       # Use named volume with correct path to match Dockerfile working directory
-      - test_output:/opt/app/output
+      - test_output: /app/output
 
   db:
     image: mongo:5.0
