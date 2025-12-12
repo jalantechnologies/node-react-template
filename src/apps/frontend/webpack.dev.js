@@ -55,11 +55,11 @@ const config = {
     hot: true,
     open: false,
     port: devServerPort,
-    proxy: {
-      secure: false,
-      // Forwards requests with /api to server running on the devServerAPIProxyPort
-      '/api': {
+    proxy: [
+      {
+        context: ['/api'],
         target: API_SERVER_URL,
+        secure: false,
         bypass: function (req) {
           // To place the documentation page on the respective route, the proxy should be bypassed for this route.
           if (req.url === DOCUMENTATION_PAGE_ROUTE) {
@@ -67,8 +67,12 @@ const config = {
           }
         },
       },
-      '/assets': API_SERVER_URL,
-    },
+      {
+        context: ['/assets'],
+        target: API_SERVER_URL,
+        secure: false,
+      },
+    ],
     setupMiddlewares: (middlewares, devServer) => {
       if (!devServer) {
         throw new Error('Webpack DevServer is not defined');
