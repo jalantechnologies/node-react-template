@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
 
       - name: Setup Node.js
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f
         with:
           node-version: '22.13.1'
           cache: 'npm'
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           fetch-depth: 0
 
@@ -53,7 +53,7 @@ jobs:
           echo "version=$(echo $tag)" >> $GITHUB_OUTPUT
 
       - name: Checkout github-ci
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
         with:
           repository: jalantechnologies/github-ci
           path: platform
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
 
       - name: Extract branch name
         id: extract_branch
@@ -156,7 +156,7 @@ jobs:
       - name: Run Trivy scan on IaC
         if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' }}
         id: trivy_iac
-        uses: aquasecurity/trivy-action@0.33.0
+        uses: aquasecurity/trivy-action@0.33.1
         continue-on-error: true
         with:
           scan-type: 'config'
@@ -170,7 +170,7 @@ jobs:
           exit-code: 1
 
       - name: Comment PR with audit results
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' && steps.trivy_iac.outcome == 'failure' }}
         with:
           token: ${{ secrets.TRIVY_SCAN_TOKEN }}
@@ -189,7 +189,7 @@ jobs:
           quiet: 'true'
 
       - name: Comment PR with audit results
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         if: ${{ steps.checkov.outcome == 'failure' }}
         with:
           token: ${{ secrets.TRIVY_SCAN_TOKEN }}
@@ -234,7 +234,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
 
       - name: Run integration tests
         run: docker compose -f docker-compose.test.yml up --exit-code-from app
