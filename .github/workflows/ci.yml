@@ -84,6 +84,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
 
+      - name: Cache Trivy DB
+        id: cache-trivy
+        uses: actions/cache@v4
+        with:
+          path: .trivy
+          key: trivy-db-v1
+
+      - name: Download Trivy DB
+        if: steps.cache-trivy.outputs.cache-hit != 'true'
+        uses: aquasecurity/trivy-action@0.33.0
+        with:
+          scan-type: 'filesystem'
+          scan-ref: '.'
+          cache-dir: .trivy
+          exit-code: 0
+
       - name: Extract branch name
         id: extract_branch
         run: |
@@ -120,6 +136,8 @@ jobs:
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
           trivyignores: ".trivyignore"
+          cache-dir: .trivy
+          skip-db-update: true
           exit-code: 1
       
       - name: Comment PR with audit results
@@ -167,6 +185,8 @@ jobs:
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
           trivyignores: ".trivyignore"
+          cache-dir: .trivy
+          skip-db-update: true
           exit-code: 1
 
       - name: Comment PR with audit results
@@ -213,6 +233,8 @@ jobs:
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
           trivyignores: ".trivyignore"
+          cache-dir: .trivy
+          skip-db-update: true
           exit-code: 1
           
       - name: Comment PR with audit results
