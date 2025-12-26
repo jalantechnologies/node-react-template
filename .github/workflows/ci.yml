@@ -245,7 +245,7 @@ jobs:
           echo "vuln_count=$COUNT" >> $GITHUB_OUTPUT
           
       - name: Comment PR with audit results
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
         if: steps.trivy_docker.outcome == 'failure' && hashFiles('trivy-docker-report.md') != '' && steps.vuln_check.outputs.vuln_count != '0'
         with:
           token: ${{ secrets.TRIVY_SCAN_TOKEN }}
