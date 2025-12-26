@@ -20,7 +20,7 @@ COPY package*.json ./
 RUN npm ci && npm cache clean --force
 
 # Production stage (minimal)
-FROM node:16.20.0-bullseye-slim
+FROM node:22.13.1-bookworm-slim
 WORKDIR /app
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     libnss3 libxss1 libxtst6 && rm -rf /var/lib/apt/lists/*
