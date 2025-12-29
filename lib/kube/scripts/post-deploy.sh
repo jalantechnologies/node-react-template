@@ -151,9 +151,12 @@ collect_diagnostics() {
   save_deploy_describe_if_present "$KUBE_NS" "$TEMPORAL_DEPLOY"
 
   # 5) Check critical Services exist and record their Endpoints.
-  for svc in "$KUBE_APP-service" temporal-service; do
-    save_service_and_endpoints_if_present "$KUBE_NS" "$svc"
-  done
+  # Always check the app service.
+  save_service_and_endpoints_if_present "$KUBE_NS" "$KUBE_APP-service"
+  # Temporal service is optional; only check if temporal deployment exists.
+  if kubectl -n "$KUBE_NS" get deploy "$TEMPORAL_DEPLOY" >/dev/null 2>&1; then
+    save_service_and_endpoints_if_present "$KUBE_NS" "temporal-service"
+  fi
 
   # 6) Build findings by scanning events/pods for common failure signals.
   EVENTS="$ART_DIR/events.filtered.txt"
