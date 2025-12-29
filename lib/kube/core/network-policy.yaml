@@ -1,6 +1,4 @@
----
 # Block all incoming traffic by default
-# This prevents unauthorized access to our pods
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -13,7 +11,6 @@ spec:
 
 ---
 # Block all outgoing traffic by default
-# This prevents data exfiltration and unauthorized external calls
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -34,7 +31,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: $KUBE_APP
+      component: $KUBE_NS
   policyTypes:
     - Egress
   egress:
@@ -47,19 +44,15 @@ spec:
         - protocol: UDP
           port: 53
     
-    # Allow communication with Temporal service
+    # Allow HTTPS calls to external APIs and MongoDB Atlas
     - to:
-        - podSelector:
-            matchLabels:
-              app: temporal
+        - ipBlock:
+            cidr: 0.0.0.0/0
       ports:
         - protocol: TCP
-          port: 7233
-    
-    # Allow HTTPS calls to external APIs
-    - ports:
-        - protocol: TCP
           port: 443
+        - protocol: TCP
+          port: 27017
 
 ---
 # Allow nginx ingress to reach our app
@@ -71,14 +64,10 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      # Use component label for consistent matching across all preview deployments
-      # This prevents downtime when commit hashes change between deployments
-      app: $KUBE_APP
       component: $KUBE_NS
   policyTypes:
     - Ingress
   ingress:
-    # Allow traffic from nginx ingress controller (in default namespace)
     - from:
         - namespaceSelector:
             matchLabels:
@@ -86,44 +75,36 @@ spec:
       ports:
         - protocol: TCP
           port: 8080
+        - protocol: TCP
+          port: 3000
 
 ---
-# Allow app to connect to Temporal
+# Allow nginx ingress to reach cert-manager ACME solver pods
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-ingress-to-temporal
+  name: allow-ingress-to-acme-solver
   namespace: $KUBE_NS
 spec:
   podSelector:
     matchLabels:
-      app: temporal
+      acme.cert-manager.io/http01-solver: "true"
   policyTypes:
     - Ingress
+    - Egress
   ingress:
     - from:
-        - podSelector:
+        - namespaceSelector:
             matchLabels:
-              app: $KUBE_APP
+              kubernetes.io/metadata.name: default
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
       ports:
         - protocol: TCP
-          port: 7233
-
----
-# Allow Temporal to connect to databases
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-temporal-egress
-  namespace: $KUBE_NS
-spec:
-  podSelector:
-    matchLabels:
-      app: temporal
-  policyTypes:
-    - Egress
+          port: 8089
   egress:
-    # Allow DNS lookups
+    # DNS lookups
     - to:
         - namespaceSelector:
             matchLabels:
@@ -131,10 +112,10 @@ spec:
       ports:
         - protocol: UDP
           port: 53
-    
-    # Allow database connections
-    - ports:
+    # HTTPS to any ACME server
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
         - protocol: TCP
-          port: 5432   # PostgreSQL
-        - protocol: TCP
-          port: 27017  # MongoDB
+          port: 443
