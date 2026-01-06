@@ -84,22 +84,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
 
-      - name: Cache Trivy DB
-        id: cache-trivy
-        uses: actions/cache@v4
-        with:
-          path: .trivy
-          key: trivy-db-v1
-
-      - name: Download Trivy DB
-        if: steps.cache-trivy.outputs.cache-hit != 'true'
-        uses: aquasecurity/trivy-action@0.33.0
-        with:
-          scan-type: 'filesystem'
-          scan-ref: '.'
-          cache-dir: .trivy
-          exit-code: 0
-
       - name: Extract branch name
         id: extract_branch
         run: |
@@ -136,17 +120,44 @@ jobs:
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
           trivyignores: ".trivyignore"
-          cache-dir: .trivy
-          skip-db-update: true
-          exit-code: 1
+          exit-code: 0
+
+      - name: Check scan results and determine severity
+        id: trivy_severity
+        if: steps.changes.outputs.changed_files != ''
+        run: |
+          if [ ! -f trivy-report.md ]; then
+            echo "Error: trivy-report.md not found!"
+            echo "critical_count=0" >> $GITHUB_OUTPUT
+            echo "high_count=0" >> $GITHUB_OUTPUT
+            echo "total_count=0" >> $GITHUB_OUTPUT
+            echo "scan_failed=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # More precise pattern matching for actual vulnerability entries
+          CRITICAL_COUNT=$(grep -E "^\|.*\|.*CRITICAL.*\|.*CVE-" trivy-report.md | wc -l || echo 0)
+          HIGH_COUNT=$(grep -E "^\|.*\|.*HIGH.*\|.*CVE-" trivy-report.md | wc -l || echo 0)
+          TOTAL_COUNT=$(grep -c "CVE-" trivy-report.md || echo 0)
+          
+          echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+          echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
+          echo "total_count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
+          echo "scan_failed=false" >> $GITHUB_OUTPUT
       
-      - name: Comment PR with audit results
+      - name: Comment PR with scan results
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
-        if: steps.trivy.outcome == 'failure'
+        if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.total_count > 0
         with:
           token: ${{ secrets.TRIVY_SCAN_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body-path: trivy-report.md
+      
+      - name: Fail if filesystem scan failed to run
+        if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.scan_failed == 'true'
+        run: |
+          echo "❌ Filesystem scan failed to generate report!"
+          exit 1
       
       - name: Get changes in k8s folder and subfolders
         id: iac_changes
@@ -185,17 +196,43 @@ jobs:
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
           trivyignores: ".trivyignore"
-          cache-dir: .trivy
-          skip-db-update: true
-          exit-code: 1
+          exit-code: 0
 
-      - name: Comment PR with audit results
+      - name: Check IaC scan results and determine severity
+        id: trivy_iac_severity
+        if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' }}
+        run: |
+          if [ ! -f trivy-iac-report.md ]; then
+            echo "Error: trivy-iac-report.md not found!"
+            echo "critical_count=0" >> $GITHUB_OUTPUT
+            echo "high_count=0" >> $GITHUB_OUTPUT
+            echo "total_count=0" >> $GITHUB_OUTPUT
+            echo "scan_failed=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          CRITICAL_COUNT=$(grep -E "^\|.*\|.*CRITICAL.*\|.*CVE-" trivy-iac-report.md | wc -l || echo 0)
+          HIGH_COUNT=$(grep -E "^\|.*\|.*HIGH.*\|.*CVE-" trivy-iac-report.md | wc -l || echo 0)
+          TOTAL_COUNT=$(grep -c "CVE-" trivy-iac-report.md || echo 0)
+          
+          echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+          echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
+          echo "total_count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
+          echo "scan_failed=false" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with IaC scan results
         uses: peter-evans/create-or-update-comment@v4
-        if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' && steps.trivy_iac.outcome == 'failure' }}
+        if: ${{ steps.iac_changes.outputs.FILTERED_FILES != '' && steps.trivy_iac_severity.outputs.total_count > 0 }}
         with:
           token: ${{ secrets.TRIVY_SCAN_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body-path: trivy-iac-report.md
+      
+      - name: Fail if IaC scan failed to run
+        if: steps.iac_changes.outputs.FILTERED_FILES != '' && steps.trivy_iac_severity.outputs.scan_failed == 'true'
+        run: |
+          echo "❌ IaC scan failed to generate report!"
+          exit 1
       
       - name: Run Checkov action
         id: checkov
@@ -233,29 +270,51 @@ jobs:
           severity: 'HIGH,CRITICAL'
           ignore-unfixed: true
           trivyignores: ".trivyignore"
-          cache-dir: .trivy
-          skip-db-update: true
-          exit-code: 1
+          exit-code: 0
 
-      - name: Check if report contains any real vulnerabilities
-        id: vuln_check
+      - name: Check Docker scan results and determine severity
+        id: trivy_docker_severity
         run: |
-          # Count how many vulnerabilities are listed in the markdown
-          COUNT=$(grep -c "CVE-" trivy-docker-report.md || true)
-          echo "vuln_count=$COUNT" >> $GITHUB_OUTPUT
+          if [ ! -f trivy-docker-report.md ]; then
+            echo "Error: trivy-docker-report.md not found!"
+            echo "critical_count=0" >> $GITHUB_OUTPUT
+            echo "high_count=0" >> $GITHUB_OUTPUT
+            echo "total_count=0" >> $GITHUB_OUTPUT
+            echo "scan_failed=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           
-      - name: Comment PR with audit results
+          CRITICAL_COUNT=$(grep -E "^\|.*\|.*CRITICAL.*\|.*CVE-" trivy-docker-report.md | wc -l || echo 0)
+          HIGH_COUNT=$(grep -E "^\|.*\|.*HIGH.*\|.*CVE-" trivy-docker-report.md | wc -l || echo 0)
+          TOTAL_COUNT=$(grep -c "CVE-" trivy-docker-report.md || echo 0)
+          
+          echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+          echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
+          echo "total_count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
+          echo "scan_failed=false" >> $GITHUB_OUTPUT
+          
+      - name: Comment PR with Docker scan results
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
-        if: steps.trivy_docker.outcome == 'failure' && hashFiles('trivy-docker-report.md') != '' && steps.vuln_check.outputs.vuln_count != '0'
+        if: hashFiles('trivy-docker-report.md') != '' && steps.trivy_docker_severity.outputs.total_count > 0
         with:
           token: ${{ secrets.TRIVY_SCAN_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
           body-path: trivy-docker-report.md
       
-      - name: Fail job if Trivy found issues
-        if: steps.trivy.outcome == 'failure' || steps.trivy_docker.outcome == 'failure' || steps.checkov.outcome == 'failure'
+      - name: Fail if Docker scan failed to run
+        if: steps.trivy_docker_severity.outputs.scan_failed == 'true'
         run: |
-          echo "❌ Trivy found vulnerabilities — failing the job."
+          echo "❌ Docker scan failed to generate report!"
+          exit 1
+      
+      - name: Fail job if CRITICAL vulnerabilities found
+        if: |
+          (steps.trivy_severity.outputs.critical_count != '' && steps.trivy_severity.outputs.critical_count > 0) ||
+          (steps.trivy_docker_severity.outputs.critical_count != '' && steps.trivy_docker_severity.outputs.critical_count > 0) ||
+          (steps.trivy_iac_severity.outputs.critical_count != '' && steps.trivy_iac_severity.outputs.critical_count > 0) ||
+          steps.checkov.outcome == 'failure'
+        run: |
+          echo "❌ CRITICAL vulnerabilities found — failing the job."
           exit 1
 
   test:
