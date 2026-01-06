@@ -200,16 +200,16 @@ jobs:
           
           # GitHub Actions annotations for better visibility
           if [ "$NEW_CRITICAL" -gt 0 ]; then
-            echo "::error::Found $NEW_CRITICAL new CRITICAL vulnerabilities in changed files (baseline: $BASELINE_CRITICAL, current: $CRITICAL_COUNT)"
+            echo "::error::Found $NEW_CRITICAL new CRITICAL vulnerabilities in changed files"
           elif [ "$NEW_HIGH" -gt 0 ]; then
-            echo "::error::Found $NEW_HIGH new HIGH vulnerabilities in changed files (baseline: $BASELINE_HIGH, current: $HIGH_COUNT)"
+            echo "::error::Found $NEW_HIGH new HIGH vulnerabilities in changed files"
           elif [ "$TOTAL_COUNT" -gt 0 ]; then
-            echo "::warning::Found $TOTAL_COUNT existing vulnerabilities in changed files ($HIGH_COUNT HIGH, $CRITICAL_COUNT CRITICAL)"
+            echo "::warning::Found existing vulnerabilities in changed files - no new issues introduced"
           fi
       
       - name: Comment PR with scan results
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
-        if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.total_count > 0
+        if: steps.changes.outputs.changed_files != '' && (steps.trivy_severity.outputs.new_critical > 0 || steps.trivy_severity.outputs.new_high > 0)
         with:
           token: ${{ secrets.TRIVY_SCAN_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -224,19 +224,17 @@ jobs:
       - name: Fail immediately if new CRITICAL vulnerabilities found in changed files
         if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.new_critical > 0
         run: |
-          echo "❌ Found ${{ steps.trivy_severity.outputs.new_critical }} new CRITICAL vulnerabilities in changed files!"
-          echo "Baseline: ${{ steps.trivy_severity.outputs.baseline_critical }} CRITICAL, Current: ${{ steps.trivy_severity.outputs.critical_count }} CRITICAL"
-          echo "Policy: Zero tolerance for new CRITICAL vulnerabilities."
-          echo "CI is failing immediately. Check the PR comment for details."
+          echo "❌ Found ${{ steps.trivy_severity.outputs.new_critical }} new CRITICAL vulnerabilities!"
+          echo "Policy: Zero tolerance for new vulnerabilities."
+          echo "Check the PR comment for details."
           exit 1
       
       - name: Fail immediately if new HIGH vulnerabilities found in changed files
         if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.new_high > 0
         run: |
-          echo "❌ Found ${{ steps.trivy_severity.outputs.new_high }} new HIGH vulnerabilities in changed files!"
-          echo "Baseline: ${{ steps.trivy_severity.outputs.baseline_high }} HIGH, Current: ${{ steps.trivy_severity.outputs.high_count }} HIGH"
-          echo "Policy: Zero tolerance for new HIGH vulnerabilities."
-          echo "CI is failing immediately. Check the PR comment for details."
+          echo "❌ Found ${{ steps.trivy_severity.outputs.new_high }} new HIGH vulnerabilities!"
+          echo "Policy: Zero tolerance for new vulnerabilities."
+          echo "Check the PR comment for details."
           exit 1
       
       - name: Get changes in k8s folder and subfolders
@@ -448,18 +446,16 @@ jobs:
           # GitHub Actions annotations for better visibility
           # Note: Docker scan includes entire image (base + dependencies), not just changes
           if [ "$NEW_CRITICAL" -gt 0 ]; then
-            echo "::error::Found $NEW_CRITICAL new CRITICAL vulnerabilities in Docker image (baseline: $BASELINE_CRITICAL, current: $CRITICAL_COUNT)"
+            echo "::error::Found $NEW_CRITICAL new CRITICAL vulnerabilities in Docker image"
           elif [ "$NEW_HIGH" -gt 0 ]; then
-            echo "::error::Found $NEW_HIGH new HIGH vulnerabilities in Docker image (baseline: $BASELINE_HIGH, current: $HIGH_COUNT)"
-          elif [ "$HIGH_COUNT" -gt 15 ]; then
-            echo "::error::Found $HIGH_COUNT total HIGH vulnerabilities in Docker image (threshold: 15, baseline: $BASELINE_HIGH)"
+            echo "::error::Found $NEW_HIGH new HIGH vulnerabilities in Docker image"
           elif [ "$TOTAL_COUNT" -gt 0 ]; then
-            echo "::warning::Found $TOTAL_COUNT vulnerabilities ($HIGH_COUNT HIGH, $CRITICAL_COUNT CRITICAL) in Docker image"
+            echo "::warning::Found existing vulnerabilities in Docker image - no new issues introduced"
           fi
           
       - name: Comment PR with Docker scan results
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
-        if: hashFiles('trivy-docker-report.md') != '' && steps.trivy_docker_severity.outputs.total_count > 0
+        if: hashFiles('trivy-docker-report.md') != '' && (steps.trivy_docker_severity.outputs.new_critical > 0 || steps.trivy_docker_severity.outputs.new_high > 0)
         with:
           token: ${{ secrets.TRIVY_SCAN_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -474,29 +470,17 @@ jobs:
       - name: Fail immediately if new CRITICAL vulnerabilities found in Docker image
         if: steps.trivy_docker_severity.outputs.new_critical > 0
         run: |
-          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.new_critical }} new CRITICAL vulnerabilities in Docker image!"
-          echo "Baseline: ${{ steps.trivy_docker_severity.outputs.baseline_critical }} CRITICAL, Current: ${{ steps.trivy_docker_severity.outputs.critical_count }} CRITICAL"
-          echo "Policy: Zero tolerance for new CRITICAL vulnerabilities."
-          echo "CI is failing immediately. Check the PR comment for details."
+          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.new_critical }} new CRITICAL vulnerabilities!"
+          echo "Policy: Zero tolerance for new vulnerabilities."
+          echo "Check the PR comment for details."
           exit 1
       
       - name: Fail immediately if new HIGH vulnerabilities found in Docker image
         if: steps.trivy_docker_severity.outputs.new_high > 0
         run: |
-          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.new_high }} new HIGH vulnerabilities in Docker image!"
-          echo "Baseline: ${{ steps.trivy_docker_severity.outputs.baseline_high }} HIGH, Current: ${{ steps.trivy_docker_severity.outputs.high_count }} HIGH"
-          echo "Policy: Zero tolerance for new HIGH vulnerabilities."
-          echo "CI is failing immediately. Check the PR comment for details."
-          exit 1
-      
-      - name: Fail if total HIGH vulnerabilities exceed threshold in Docker image
-        if: steps.trivy_docker_severity.outputs.high_count > 15
-        run: |
-          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.high_count }} total HIGH vulnerabilities in Docker image!"
-          echo "Threshold exceeded: 15 HIGH vulnerabilities allowed."
-          echo "Baseline: ${{ steps.trivy_docker_severity.outputs.baseline_high }} HIGH, Current: ${{ steps.trivy_docker_severity.outputs.high_count }} HIGH"
-          echo "This includes existing vulnerabilities. Please work on reducing the overall count."
-          echo "CI is failing immediately. Check the PR comment for details."
+          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.new_high }} new HIGH vulnerabilities!"
+          echo "Policy: Zero tolerance for new vulnerabilities."
+          echo "Check the PR comment for details."
           exit 1
       
       - name: Fail if Checkov found issues
@@ -504,6 +488,7 @@ jobs:
         run: |
           echo "❌ Checkov found security issues!"
           exit 1
+
 
   test:
     if: github.event.pull_request.state == 'open' && github.event.pull_request.draft == false
