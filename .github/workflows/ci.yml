@@ -226,8 +226,12 @@ jobs:
           fi
           
           # Check for any new vulnerabilities (CRITICAL or HIGH)
-          NEW_CRITICAL=${{ steps.trivy_severity.outputs.new_critical }}
-          NEW_HIGH=${{ steps.trivy_severity.outputs.new_high }}
+          NEW_CRITICAL="${{ steps.trivy_severity.outputs.new_critical }}"
+          NEW_HIGH="${{ steps.trivy_severity.outputs.new_high }}"
+          
+          # Default to 0 if empty
+          NEW_CRITICAL=${NEW_CRITICAL:-0}
+          NEW_HIGH=${NEW_HIGH:-0}
           
           if [ "$NEW_CRITICAL" -gt 0 ] || [ "$NEW_HIGH" -gt 0 ]; then
             echo "❌ Found new vulnerabilities in changed files!"
@@ -417,8 +421,12 @@ jobs:
           fi
           
           # Check for any new vulnerabilities in Docker (CRITICAL or HIGH)
-          NEW_CRITICAL=${{ steps.trivy_docker_severity.outputs.new_critical }}
-          NEW_HIGH=${{ steps.trivy_docker_severity.outputs.new_high }}
+          NEW_CRITICAL="${{ steps.trivy_docker_severity.outputs.new_critical }}"
+          NEW_HIGH="${{ steps.trivy_docker_severity.outputs.new_high }}"
+          
+          # Default to 0 if empty
+          NEW_CRITICAL=${NEW_CRITICAL:-0}
+          NEW_HIGH=${NEW_HIGH:-0}
           
           if [ "$NEW_CRITICAL" -gt 0 ] || [ "$NEW_HIGH" -gt 0 ]; then
             echo "❌ Found new vulnerabilities in Docker image!"
