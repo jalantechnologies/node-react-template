@@ -172,16 +172,16 @@ jobs:
           fi
           
           # Match table rows: | Package | CVE-XXXX | CRITICAL | ...
-          CRITICAL_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| CRITICAL \|" trivy-report.md | wc -l || echo 0)
-          HIGH_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| HIGH \|" trivy-report.md | wc -l || echo 0)
-          TOTAL_COUNT=$(grep -c "CVE-" trivy-report.md || echo 0)
+          CRITICAL_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| CRITICAL \|" trivy-report.md | wc -l | xargs || echo 0)
+          HIGH_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| HIGH \|" trivy-report.md | wc -l | xargs || echo 0)
+          TOTAL_COUNT=$(grep -c "CVE-" trivy-report.md | xargs || echo 0)
           
           # Get baseline counts if baseline scan succeeded
           BASELINE_CRITICAL=0
           BASELINE_HIGH=0
           if [ -f trivy-baseline.json ]; then
-            BASELINE_CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-baseline.json || echo 0)
-            BASELINE_HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-baseline.json || echo 0)
+            BASELINE_CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-baseline.json | xargs || echo 0)
+            BASELINE_HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-baseline.json | xargs || echo 0)
           fi
           
           # Calculate new vulnerabilities
@@ -368,16 +368,16 @@ jobs:
           fi
           
           # Match table rows: | Package | CVE-XXXX | CRITICAL | ...
-          CRITICAL_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| CRITICAL \|" trivy-docker-report.md | wc -l || echo 0)
-          HIGH_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| HIGH \|" trivy-docker-report.md | wc -l || echo 0)
-          TOTAL_COUNT=$(grep -c "CVE-" trivy-docker-report.md || echo 0)
+          CRITICAL_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| CRITICAL \|" trivy-docker-report.md | wc -l | xargs || echo 0)
+          HIGH_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| HIGH \|" trivy-docker-report.md | wc -l | xargs || echo 0)
+          TOTAL_COUNT=$(grep -c "CVE-" trivy-docker-report.md | xargs || echo 0)
           
           # Get baseline counts if baseline scan succeeded
           BASELINE_CRITICAL=0
           BASELINE_HIGH=0
           if [ -f trivy-docker-baseline.json ]; then
-            BASELINE_CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-docker-baseline.json || echo 0)
-            BASELINE_HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-docker-baseline.json || echo 0)
+            BASELINE_CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-docker-baseline.json | xargs || echo 0)
+            BASELINE_HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-docker-baseline.json | xargs || echo 0)
           fi
           
           # Calculate new vulnerabilities
