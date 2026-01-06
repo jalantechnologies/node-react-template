@@ -140,9 +140,9 @@ jobs:
             exit 0
           fi
           
-          # More precise pattern matching for actual vulnerability entries
-          CRITICAL_COUNT=$(grep -E "^\|.*\|.*CRITICAL.*\|.*CVE-" trivy-report.md | wc -l || echo 0)
-          HIGH_COUNT=$(grep -E "^\|.*\|.*HIGH.*\|.*CVE-" trivy-report.md | wc -l || echo 0)
+          # Match table rows: | Package | CVE-XXXX | CRITICAL | ...
+          CRITICAL_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| CRITICAL \|" trivy-report.md | wc -l || echo 0)
+          HIGH_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| HIGH \|" trivy-report.md | wc -l || echo 0)
           TOTAL_COUNT=$(grep -c "CVE-" trivy-report.md || echo 0)
           
           echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
@@ -216,8 +216,9 @@ jobs:
             exit 0
           fi
           
-          CRITICAL_COUNT=$(grep -E "^\|.*\|.*CRITICAL.*\|.*CVE-" trivy-iac-report.md | wc -l || echo 0)
-          HIGH_COUNT=$(grep -E "^\|.*\|.*HIGH.*\|.*CVE-" trivy-iac-report.md | wc -l || echo 0)
+          # Match table rows: | Package | CVE-XXXX | CRITICAL | ...
+          CRITICAL_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| CRITICAL \|" trivy-iac-report.md | wc -l || echo 0)
+          HIGH_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| HIGH \|" trivy-iac-report.md | wc -l || echo 0)
           TOTAL_COUNT=$(grep -c "CVE-" trivy-iac-report.md || echo 0)
           
           echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
@@ -289,8 +290,9 @@ jobs:
             exit 0
           fi
           
-          CRITICAL_COUNT=$(grep -E "^\|.*\|.*CRITICAL.*\|.*CVE-" trivy-docker-report.md | wc -l || echo 0)
-          HIGH_COUNT=$(grep -E "^\|.*\|.*HIGH.*\|.*CVE-" trivy-docker-report.md | wc -l || echo 0)
+          # Match table rows: | Package | CVE-XXXX | CRITICAL | ...
+          CRITICAL_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| CRITICAL \|" trivy-docker-report.md | wc -l || echo 0)
+          HIGH_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| HIGH \|" trivy-docker-report.md | wc -l || echo 0)
           TOTAL_COUNT=$(grep -c "CVE-" trivy-docker-report.md || echo 0)
           
           echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
