@@ -111,6 +111,34 @@ jobs:
           ls changed_files/
           echo "changed_files=$(echo $CHANGED_FILES)" >> $GITHUB_OUTPUT
 
+      - name: Get baseline files from base branch
+        if: steps.changes.outputs.changed_files != ''
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }} --depth=1
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} HEAD)
+          mkdir -p baseline_files/
+          for file in $CHANGED_FILES; do
+            if [[ -f "$file" ]]; then
+              # Try to get file from base branch
+              git show origin/${{ github.event.pull_request.base.ref }}:$file > baseline_files/$file 2>/dev/null || echo "File doesn't exist in base branch"
+            fi
+          done
+
+      - name: Run Trivy scan on baseline files
+        id: trivy_baseline
+        if: steps.changes.outputs.changed_files != ''
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
+        continue-on-error: true
+        with:
+          scan-type: 'filesystem'
+          scan-ref: './baseline_files'
+          format: 'json'
+          output: 'trivy-baseline.json'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          trivyignores: ".trivyignore"
+          exit-code: 0
+
       - name: Run Trivy scan on changed files
         id: trivy
         if: steps.changes.outputs.changed_files != ''
@@ -145,18 +173,38 @@ jobs:
           HIGH_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| HIGH \|" trivy-report.md | wc -l || echo 0)
           TOTAL_COUNT=$(grep -c "CVE-" trivy-report.md || echo 0)
           
+          # Get baseline counts if baseline scan succeeded
+          BASELINE_CRITICAL=0
+          BASELINE_HIGH=0
+          if [ -f trivy-baseline.json ]; then
+            BASELINE_CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-baseline.json || echo 0)
+            BASELINE_HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-baseline.json || echo 0)
+          fi
+          
+          # Calculate new vulnerabilities
+          NEW_CRITICAL=$((CRITICAL_COUNT - BASELINE_CRITICAL))
+          NEW_HIGH=$((HIGH_COUNT - BASELINE_HIGH))
+          
+          # Ensure non-negative
+          [ $NEW_CRITICAL -lt 0 ] && NEW_CRITICAL=0
+          [ $NEW_HIGH -lt 0 ] && NEW_HIGH=0
+          
           echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
           echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
           echo "total_count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
+          echo "baseline_critical=$BASELINE_CRITICAL" >> $GITHUB_OUTPUT
+          echo "baseline_high=$BASELINE_HIGH" >> $GITHUB_OUTPUT
+          echo "new_critical=$NEW_CRITICAL" >> $GITHUB_OUTPUT
+          echo "new_high=$NEW_HIGH" >> $GITHUB_OUTPUT
           echo "scan_failed=false" >> $GITHUB_OUTPUT
           
           # GitHub Actions annotations for better visibility
-          if [ "$CRITICAL_COUNT" -gt 0 ]; then
-            echo "::error::Found $CRITICAL_COUNT CRITICAL vulnerabilities in changed files"
-          elif [ "$HIGH_COUNT" -gt 0 ]; then
-            echo "::error::Found $HIGH_COUNT HIGH vulnerabilities in changed files"
+          if [ "$NEW_CRITICAL" -gt 0 ]; then
+            echo "::error::Found $NEW_CRITICAL new CRITICAL vulnerabilities in changed files (baseline: $BASELINE_CRITICAL, current: $CRITICAL_COUNT)"
+          elif [ "$NEW_HIGH" -gt 0 ]; then
+            echo "::error::Found $NEW_HIGH new HIGH vulnerabilities in changed files (baseline: $BASELINE_HIGH, current: $HIGH_COUNT)"
           elif [ "$TOTAL_COUNT" -gt 0 ]; then
-            echo "::warning::Found $TOTAL_COUNT lower severity vulnerabilities in changed files"
+            echo "::warning::Found $TOTAL_COUNT existing vulnerabilities in changed files ($HIGH_COUNT HIGH, $CRITICAL_COUNT CRITICAL)"
           fi
       
       - name: Comment PR with scan results
@@ -173,18 +221,21 @@ jobs:
           echo "❌ Filesystem scan failed to generate report!"
           exit 1
       
-      - name: Fail immediately if CRITICAL vulnerabilities found in filesystem
-        if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.critical_count > 0
+      - name: Fail immediately if new CRITICAL vulnerabilities found in changed files
+        if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.new_critical > 0
         run: |
-          echo "❌ Found ${{ steps.trivy_severity.outputs.critical_count }} CRITICAL vulnerabilities in filesystem scan!"
+          echo "❌ Found ${{ steps.trivy_severity.outputs.new_critical }} new CRITICAL vulnerabilities in changed files!"
+          echo "Baseline: ${{ steps.trivy_severity.outputs.baseline_critical }} CRITICAL, Current: ${{ steps.trivy_severity.outputs.critical_count }} CRITICAL"
+          echo "Policy: Zero tolerance for new CRITICAL vulnerabilities."
           echo "CI is failing immediately. Check the PR comment for details."
           exit 1
       
-      - name: Fail immediately if HIGH vulnerabilities found in changed files
-        if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.high_count > 0
+      - name: Fail immediately if new HIGH vulnerabilities found in changed files
+        if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.new_high > 0
         run: |
-          echo "❌ Found ${{ steps.trivy_severity.outputs.high_count }} HIGH vulnerabilities in changed files!"
-          echo "Policy: Zero tolerance for new vulnerabilities. Any HIGH or CRITICAL vulnerability in new code fails CI."
+          echo "❌ Found ${{ steps.trivy_severity.outputs.new_high }} new HIGH vulnerabilities in changed files!"
+          echo "Baseline: ${{ steps.trivy_severity.outputs.baseline_high }} HIGH, Current: ${{ steps.trivy_severity.outputs.high_count }} HIGH"
+          echo "Policy: Zero tolerance for new HIGH vulnerabilities."
           echo "CI is failing immediately. Check the PR comment for details."
           exit 1
       
