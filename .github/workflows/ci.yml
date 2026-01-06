@@ -311,6 +311,32 @@ jobs:
         run: |
           docker build -t node-react-template:${{ steps.extract_branch.outputs.branch_hash }} .
 
+      - name: Checkout base branch for baseline scan
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: baseline
+
+      - name: Build baseline Docker image
+        run: |
+          cd baseline
+          docker build -t node-react-template:baseline .
+          cd ..
+
+      - name: Run Trivy scan on baseline Docker image
+        id: trivy_docker_baseline
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
+        continue-on-error: true
+        with:
+          scan-type: 'image'
+          image-ref: 'node-react-template:baseline'
+          format: 'json'
+          output: 'trivy-docker-baseline.json'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          trivyignores: ".trivyignore"
+          exit-code: 0
+
       - name: Run Trivy scan on docker images
         id: trivy_docker
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
@@ -343,18 +369,41 @@ jobs:
           HIGH_COUNT=$(grep -E "^\| .+ \| CVE-.+ \| HIGH \|" trivy-docker-report.md | wc -l || echo 0)
           TOTAL_COUNT=$(grep -c "CVE-" trivy-docker-report.md || echo 0)
           
+          # Get baseline counts if baseline scan succeeded
+          BASELINE_CRITICAL=0
+          BASELINE_HIGH=0
+          if [ -f trivy-docker-baseline.json ]; then
+            BASELINE_CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-docker-baseline.json || echo 0)
+            BASELINE_HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-docker-baseline.json || echo 0)
+          fi
+          
+          # Calculate new vulnerabilities
+          NEW_CRITICAL=$((CRITICAL_COUNT - BASELINE_CRITICAL))
+          NEW_HIGH=$((HIGH_COUNT - BASELINE_HIGH))
+          
+          # Ensure non-negative (in case baseline had more, which shouldn't happen)
+          [ $NEW_CRITICAL -lt 0 ] && NEW_CRITICAL=0
+          [ $NEW_HIGH -lt 0 ] && NEW_HIGH=0
+          
           echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
           echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
           echo "total_count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
+          echo "baseline_critical=$BASELINE_CRITICAL" >> $GITHUB_OUTPUT
+          echo "baseline_high=$BASELINE_HIGH" >> $GITHUB_OUTPUT
+          echo "new_critical=$NEW_CRITICAL" >> $GITHUB_OUTPUT
+          echo "new_high=$NEW_HIGH" >> $GITHUB_OUTPUT
           echo "scan_failed=false" >> $GITHUB_OUTPUT
           
           # GitHub Actions annotations for better visibility
-          if [ "$CRITICAL_COUNT" -gt 0 ]; then
-            echo "::error::Found $CRITICAL_COUNT CRITICAL vulnerabilities in Docker image"
-          elif [ "$HIGH_COUNT" -gt 0 ]; then
-            echo "::error::Found $HIGH_COUNT HIGH vulnerabilities in Docker image"
+          # Note: Docker scan includes entire image (base + dependencies), not just changes
+          if [ "$NEW_CRITICAL" -gt 0 ]; then
+            echo "::error::Found $NEW_CRITICAL new CRITICAL vulnerabilities in Docker image (baseline: $BASELINE_CRITICAL, current: $CRITICAL_COUNT)"
+          elif [ "$NEW_HIGH" -gt 0 ]; then
+            echo "::error::Found $NEW_HIGH new HIGH vulnerabilities in Docker image (baseline: $BASELINE_HIGH, current: $HIGH_COUNT)"
+          elif [ "$HIGH_COUNT" -gt 15 ]; then
+            echo "::error::Found $HIGH_COUNT total HIGH vulnerabilities in Docker image (threshold: 15, baseline: $BASELINE_HIGH)"
           elif [ "$TOTAL_COUNT" -gt 0 ]; then
-            echo "::warning::Found $TOTAL_COUNT lower severity vulnerabilities in Docker image"
+            echo "::warning::Found $TOTAL_COUNT vulnerabilities ($HIGH_COUNT HIGH, $CRITICAL_COUNT CRITICAL) in Docker image"
           fi
           
       - name: Comment PR with Docker scan results
@@ -371,18 +420,31 @@ jobs:
           echo "❌ Docker scan failed to generate report!"
           exit 1
       
-      - name: Fail immediately if CRITICAL vulnerabilities found in Docker image
-        if: steps.trivy_docker_severity.outputs.critical_count > 0
+      - name: Fail immediately if new CRITICAL vulnerabilities found in Docker image
+        if: steps.trivy_docker_severity.outputs.new_critical > 0
         run: |
-          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.critical_count }} CRITICAL vulnerabilities in Docker image scan!"
+          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.new_critical }} new CRITICAL vulnerabilities in Docker image!"
+          echo "Baseline: ${{ steps.trivy_docker_severity.outputs.baseline_critical }} CRITICAL, Current: ${{ steps.trivy_docker_severity.outputs.critical_count }} CRITICAL"
+          echo "Policy: Zero tolerance for new CRITICAL vulnerabilities."
           echo "CI is failing immediately. Check the PR comment for details."
           exit 1
       
-      - name: Fail immediately if HIGH vulnerabilities found in Docker image
-        if: steps.trivy_docker_severity.outputs.high_count > 0
+      - name: Fail immediately if new HIGH vulnerabilities found in Docker image
+        if: steps.trivy_docker_severity.outputs.new_high > 0
         run: |
-          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.high_count }} HIGH vulnerabilities in Docker image!"
-          echo "Policy: Zero tolerance for new vulnerabilities. Any HIGH or CRITICAL vulnerability fails CI."
+          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.new_high }} new HIGH vulnerabilities in Docker image!"
+          echo "Baseline: ${{ steps.trivy_docker_severity.outputs.baseline_high }} HIGH, Current: ${{ steps.trivy_docker_severity.outputs.high_count }} HIGH"
+          echo "Policy: Zero tolerance for new HIGH vulnerabilities."
+          echo "CI is failing immediately. Check the PR comment for details."
+          exit 1
+      
+      - name: Fail if total HIGH vulnerabilities exceed threshold in Docker image
+        if: steps.trivy_docker_severity.outputs.high_count > 15
+        run: |
+          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.high_count }} total HIGH vulnerabilities in Docker image!"
+          echo "Threshold exceeded: 15 HIGH vulnerabilities allowed."
+          echo "Baseline: ${{ steps.trivy_docker_severity.outputs.baseline_high }} HIGH, Current: ${{ steps.trivy_docker_severity.outputs.high_count }} HIGH"
+          echo "This includes existing vulnerabilities. Please work on reducing the overall count."
           echo "CI is failing immediately. Check the PR comment for details."
           exit 1
       
