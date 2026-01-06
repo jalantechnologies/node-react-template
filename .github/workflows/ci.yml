@@ -149,6 +149,15 @@ jobs:
           echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
           echo "total_count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
           echo "scan_failed=false" >> $GITHUB_OUTPUT
+          
+          # GitHub Actions annotations for better visibility
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "::error::Found $CRITICAL_COUNT CRITICAL vulnerabilities in changed files"
+          elif [ "$HIGH_COUNT" -gt 0 ]; then
+            echo "::error::Found $HIGH_COUNT HIGH vulnerabilities in changed files"
+          elif [ "$TOTAL_COUNT" -gt 0 ]; then
+            echo "::warning::Found $TOTAL_COUNT lower severity vulnerabilities in changed files"
+          fi
       
       - name: Comment PR with scan results
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
@@ -162,6 +171,21 @@ jobs:
         if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.scan_failed == 'true'
         run: |
           echo "❌ Filesystem scan failed to generate report!"
+          exit 1
+      
+      - name: Fail immediately if CRITICAL vulnerabilities found in filesystem
+        if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.critical_count > 0
+        run: |
+          echo "❌ Found ${{ steps.trivy_severity.outputs.critical_count }} CRITICAL vulnerabilities in filesystem scan!"
+          echo "CI is failing immediately. Check the PR comment for details."
+          exit 1
+      
+      - name: Fail immediately if HIGH vulnerabilities found in changed files
+        if: steps.changes.outputs.changed_files != '' && steps.trivy_severity.outputs.high_count > 0
+        run: |
+          echo "❌ Found ${{ steps.trivy_severity.outputs.high_count }} HIGH vulnerabilities in changed files!"
+          echo "Policy: Zero tolerance for new vulnerabilities. Any HIGH or CRITICAL vulnerability in new code fails CI."
+          echo "CI is failing immediately. Check the PR comment for details."
           exit 1
       
       - name: Get changes in k8s folder and subfolders
@@ -225,6 +249,15 @@ jobs:
           echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
           echo "total_count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
           echo "scan_failed=false" >> $GITHUB_OUTPUT
+          
+          # GitHub Actions annotations for better visibility
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "::error::Found $CRITICAL_COUNT CRITICAL vulnerabilities in IaC changes"
+          elif [ "$HIGH_COUNT" -gt 0 ]; then
+            echo "::error::Found $HIGH_COUNT HIGH vulnerabilities in IaC changes"
+          elif [ "$TOTAL_COUNT" -gt 0 ]; then
+            echo "::warning::Found $TOTAL_COUNT lower severity vulnerabilities in IaC changes"
+          fi
 
       - name: Comment PR with IaC scan results
         uses: peter-evans/create-or-update-comment@v4
@@ -238,6 +271,21 @@ jobs:
         if: steps.iac_changes.outputs.FILTERED_FILES != '' && steps.trivy_iac_severity.outputs.scan_failed == 'true'
         run: |
           echo "❌ IaC scan failed to generate report!"
+          exit 1
+      
+      - name: Fail immediately if CRITICAL vulnerabilities found in IaC
+        if: steps.iac_changes.outputs.FILTERED_FILES != '' && steps.trivy_iac_severity.outputs.critical_count > 0
+        run: |
+          echo "❌ Found ${{ steps.trivy_iac_severity.outputs.critical_count }} CRITICAL vulnerabilities in IaC scan!"
+          echo "CI is failing immediately. Check the PR comment for details."
+          exit 1
+      
+      - name: Fail immediately if HIGH vulnerabilities found in IaC changes
+        if: steps.iac_changes.outputs.FILTERED_FILES != '' && steps.trivy_iac_severity.outputs.high_count > 0
+        run: |
+          echo "❌ Found ${{ steps.trivy_iac_severity.outputs.high_count }} HIGH vulnerabilities in IaC changes!"
+          echo "Policy: Zero tolerance for new vulnerabilities. Any HIGH or CRITICAL vulnerability in new code fails CI."
+          echo "CI is failing immediately. Check the PR comment for details."
           exit 1
       
       - name: Run Checkov action
@@ -300,6 +348,15 @@ jobs:
           echo "total_count=$TOTAL_COUNT" >> $GITHUB_OUTPUT
           echo "scan_failed=false" >> $GITHUB_OUTPUT
           
+          # GitHub Actions annotations for better visibility
+          if [ "$CRITICAL_COUNT" -gt 0 ]; then
+            echo "::error::Found $CRITICAL_COUNT CRITICAL vulnerabilities in Docker image"
+          elif [ "$HIGH_COUNT" -gt 0 ]; then
+            echo "::error::Found $HIGH_COUNT HIGH vulnerabilities in Docker image"
+          elif [ "$TOTAL_COUNT" -gt 0 ]; then
+            echo "::warning::Found $TOTAL_COUNT lower severity vulnerabilities in Docker image"
+          fi
+          
       - name: Comment PR with Docker scan results
         uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9
         if: hashFiles('trivy-docker-report.md') != '' && steps.trivy_docker_severity.outputs.total_count > 0
@@ -314,14 +371,25 @@ jobs:
           echo "❌ Docker scan failed to generate report!"
           exit 1
       
-      - name: Fail job if CRITICAL vulnerabilities found
-        if: |
-          (steps.trivy_severity.outputs.critical_count != '' && steps.trivy_severity.outputs.critical_count > 0) ||
-          (steps.trivy_docker_severity.outputs.critical_count != '' && steps.trivy_docker_severity.outputs.critical_count > 0) ||
-          (steps.trivy_iac_severity.outputs.critical_count != '' && steps.trivy_iac_severity.outputs.critical_count > 0) ||
-          steps.checkov.outcome == 'failure'
+      - name: Fail immediately if CRITICAL vulnerabilities found in Docker image
+        if: steps.trivy_docker_severity.outputs.critical_count > 0
         run: |
-          echo "❌ CRITICAL vulnerabilities found — failing the job."
+          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.critical_count }} CRITICAL vulnerabilities in Docker image scan!"
+          echo "CI is failing immediately. Check the PR comment for details."
+          exit 1
+      
+      - name: Fail immediately if HIGH vulnerabilities found in Docker image
+        if: steps.trivy_docker_severity.outputs.high_count > 0
+        run: |
+          echo "❌ Found ${{ steps.trivy_docker_severity.outputs.high_count }} HIGH vulnerabilities in Docker image!"
+          echo "Policy: Zero tolerance for new vulnerabilities. Any HIGH or CRITICAL vulnerability fails CI."
+          echo "CI is failing immediately. Check the PR comment for details."
+          exit 1
+      
+      - name: Fail if Checkov found issues
+        if: steps.checkov.outcome == 'failure'
+        run: |
+          echo "❌ Checkov found security issues!"
           exit 1
 
   test:
